@@ -87,7 +87,10 @@ def process_update(index):
             desc = input("Enter the updated description of the task (Press Enter to keep current): ").strip()
             due = input("Enter the updated due date (format: m/d/y H:M:S, Press Enter to keep current): ").strip()
             
-            update_task(index, name=name, description=desc, due=due)
+            if not name and not desc and not due:
+                print("No changes provided -> Task not updated!")  # no updates provided
+            else:
+                update_task(index, name=name, description=desc, due=due)
         else:
             print("Invalid task number.")  #failure message
     except Exception as e:
@@ -98,14 +101,17 @@ def update_task(index: int, name: str, description:str, due: str):
     """ Updates the name, description , due date of a task found by index if an update to the property was provided """
     """Name: Bhavya Shah; ucid: bs635; Date: 1 October, 2023"""
     if 0 <= index < len(tasks):
-        task = tasks[index].copy()   # finding task by index
-        task['name'] = name if name else task['name']  # Updating the attributes
-        task['description'] = description if description else task['description']
-        task['due'] = str_to_datetime(due) if due else task['due']
-        task['lastActivity'] = datetime.now()
-        tasks.pop(index)
-        tasks.insert(index, task)
-        print("Task updated successfully!")  # success message
+        task = tasks[index].copy()   # finding task by 
+        if name or description or due:
+            task['name'] = name if name else task['name']  # Updating the attributes
+            task['description'] = description if description else task['description']
+            task['due'] = str_to_datetime(due) if due else task['due']
+            task['lastActivity'] = datetime.now()
+            tasks.pop(index)
+            tasks.insert(index, task)
+            print("Task updated successfully!")  # success message
+        else:
+            print("No changes provided -> Task not updated!")  # no updates provided
     else:
         print("Invalid task number -> Update unsuccesful")  # failure message
     save()
