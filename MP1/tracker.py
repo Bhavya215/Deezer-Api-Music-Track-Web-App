@@ -94,7 +94,7 @@ def process_update(index):
         else:
             print("Invalid task number.")  #failure message
     except Exception as e:
-        print(f"An error occurred: {e}")  #failure message with the error
+        print(f"An error occurred: {e} \nTask not updated")  #failure message with the error
 
 
 def update_task(index: int, name: str, description:str, due: str):
@@ -161,8 +161,8 @@ def delete_task(index):
 def get_incomplete_tasks():
     """ prints a list of tasks that are not done """
     """Name: Bhavya Shah; ucid: bs635; Date: 1 October, 2023"""
-    _tasks = [task for task in tasks if not task['done']]
-    list_tasks(_tasks)
+    _tasks = [task for task in tasks if not task['done']] # Select tasks that are not marked as done
+    list_tasks(_tasks)  #passing it to list_tasks
 
 def get_overdue_tasks():
     """ prints a list of tasks that are over due completion (not done and expired) """
