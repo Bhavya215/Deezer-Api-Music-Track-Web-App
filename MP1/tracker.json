@@ -1,0 +1,30 @@
+[
+    {
+        "name": "Mini Project",
+        "due": "2023-10-09 23:59:59",
+        "lastActivity": "2023-10-04 15:36:13.697953",
+        "description": "Complete the project for submission",
+        "done": "2023-10-04 14:57:48.096632"
+    },
+    {
+        "name": "Budget Review",
+        "due": "2023-09-30 23:30:00",
+        "lastActivity": "2023-10-01 18:44:30.077677",
+        "description": "Review the budget for September",
+        "done": "2023-10-04 14:57:48.096632"
+    },
+    {
+        "name": "Order new part for Tesla",
+        "due": "2023-08-23 12:00:00",
+        "lastActivity": "2023-10-01 17:40:12.156627",
+        "description": "Order the broken part",
+        "done": false
+    },
+    {
+        "name": "Quiz",
+        "due": "2023-10-02 23:59:59",
+        "lastActivity": "2023-10-02 14:43:51.864613",
+        "description": "Do the IS601 Quiz2",
+        "done": false
+    }
+]
