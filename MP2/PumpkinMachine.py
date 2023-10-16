@@ -94,37 +94,47 @@ class PumpkinMachine:
             raise InvalidStageException
         for c in self.pumpkins:
             if c.name.lower() == choice.lower():
-                c.use()
-                self.inprogress_pumpkin.append(c)
+                if c.in_stock():
+                    c.use()
+                    self.inprogress_pumpkin.append(c)
+                else:
+                    raise OutOfStockException(f"{c.name}")
                 return
         raise InvalidChoiceException
 
     def pick_face_stencil(self, choice):
         if self.currently_selecting != STAGE.FaceStencil:
-            raise InvalidStageException
+            raise InvalidStageException(f"Please Enter a pumpkin before adding face stencils")
         if self.remaining_uses <= 0:
             raise NeedsCleaningException
         if self.remaining_stencils <= 0:
             raise ExceededRemainingChoicesException
         for f in self.face_stencils:
             if f.name.lower() == choice.lower():
-                f.use()
-                self.inprogress_pumpkin.append(f)
-                self.remaining_stencils -= 1
-                self.remaining_uses -= 1
+                if f.in_stock():
+                    f.use()
+                    self.inprogress_pumpkin.append(f)
+                    self.remaining_stencils -= 1
+                    self.remaining_uses -= 1
+                else:
+                    raise OutOfStockException(f"{f.name} in the Face Stencil category")
                 return
+
         raise InvalidChoiceException
 
     def pick_extras(self, choice):
         if self.currently_selecting != STAGE.Extra:
-            raise InvalidStageException
+            raise InvalidStageException(f"Please Enter a pumpkin before adding extras")
         if self.remaining_extras <= 0:
             raise ExceededRemainingChoicesException
         for t in self.extras:
             if t.name.lower() == choice.lower():
-                t.use()
-                self.inprogress_pumpkin.append(t)
-                self.remaining_extras -= 1
+                if t.in_stock():
+                    t.use()
+                    self.inprogress_pumpkin.append(t)
+                    self.remaining_extras -= 1
+                else:
+                    raise OutOfStockException(f"{t.name} is out of stock in the Extra category")
                 return
         raise InvalidChoiceException
 
@@ -139,16 +149,22 @@ class PumpkinMachine:
         self.remaining_uses = self.USES_UNTIL_CLEANING
 
     def handle_pumpkin_choice(self, _pumpkin):
+        if self.currently_selecting != STAGE.Pumpkin:
+            raise InvalidStageException(f"Handle pumkin function")
         self.pick_pumpkin(_pumpkin)
         self.currently_selecting = STAGE.FaceStencil
 
     def handle_face_stencil_choice(self, _face_stencil):
+        if self.currently_selecting != STAGE.FaceStencil:
+            raise InvalidStageException("You must choose a pumpkin first.")
         if _face_stencil == "next":
             self.currently_selecting = STAGE.Extra
         else:
             self.pick_face_stencil(_face_stencil)
 
     def handle_extra_choice(self, _extra):
+        if self.currently_selecting != STAGE.Extra:
+            raise InvalidStageException
         if _extra == "done":
             self.currently_selecting = STAGE.Pay
         else:
@@ -171,8 +187,23 @@ class PumpkinMachine:
             f"Current Pumpkin: {','.join([x.name for x in self.inprogress_pumpkin])}")
 
     def calculate_cost(self):
-        # TODO add the calculation expression/logic for the inprogress_pumpkin
-        return 10000  # <-- this needs to be changed
+        total_cost = 0
+
+        # Calculating the cost of the selected pumpkin
+        if self.inprogress_pumpkin and isinstance(self.inprogress_pumpkin[0], Pumpkin):
+            total_cost += self.inprogress_pumpkin[0].cost
+
+        # Calculating the cost of the selected face stencils (if there are any)
+        for item in self.inprogress_pumpkin[1:]:
+            if isinstance(item, FaceStencil):
+                total_cost += item.cost
+
+        # Calculating the cost of the selected extras (if there are any)
+        for item in self.inprogress_pumpkin:
+            if isinstance(item, Extra):
+                total_cost += item.cost
+
+        return total_cost
 
     def run(self):
         try:
@@ -195,8 +226,9 @@ class PumpkinMachine:
                 expected = self.calculate_cost()
                 # TODO show expected value as currency format
                 # TODO require total to be entered as currency format
+                
                 total = input(
-                    f"Your total is {expected}, please enter the exact value.\n")
+                    f"Your total is ${expected:,.2f}, please enter the exact value.\n")
                 self.handle_pay(expected, total)
 
                 choice = input("What would you like to do? (order or quit)\n")
@@ -224,6 +256,38 @@ class PumpkinMachine:
             # move to the next stage/category
         # handle InvalidPaymentException
             # show an appropriate message
+        except OutOfStockException as e:
+            print(f"Out of Stock: {e}")
+        except NeedsCleaningException:
+            clean_input = input("Machine needs cleaning. Type 'clean' to clean the machine: ")
+            if clean_input.lower() == 'clean':
+                pm.clean_machine()
+                print("Machine has been cleaned. You can continue.")
+            else:
+                print("Machine cleaning was not initiated. Continuing without cleaning.")
+        except InvalidChoiceException:
+            if pm.currently_selecting == STAGE.Pumpkin:
+                print("Invalid pumpkin choice. Please choose a valid pumpkin.")
+            elif pm.currently_selecting == STAGE.FaceStencil:
+                print("Invalid face stencil choice. Please choose a valid face stencil.")
+            elif pm.currently_selecting == STAGE.Extra:
+                print("Invalid extra choice. Please choose a valid extra.")
+
+        except ExceededRemainingChoicesException:
+            if pm.currently_selecting == STAGE.FaceStencil:
+                print("You have already selected the maximum number of face stencils. Moving to the next stage.")
+            elif pm.currently_selecting == STAGE.Extra:
+                print("You have already selected the maximum number of extras. Moving to the next stage.")
+            # Move to the next stage/category
+            pm.currently_selecting = STAGE(pm.currently_selecting.value + 1)
+
+        except InvalidPaymentException:
+            print("Invalid payment amount. Please enter the exact payment amount for your order.")
+
+        except InvalidStageException:
+            print("You must select a pumpkin first.")
+            pm.currently_selecting = STAGE.Pumpkin
+
         except Exception as e:
             # this is a default catch all, follow the steps above
             print(f"Something went wrong and I didn't handle it: {e}")
