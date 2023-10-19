@@ -51,33 +51,34 @@ class PumpkinMachine:
     USES_UNTIL_CLEANING = 15
     MAX_STENCILS = 3
     MAX_EXTRAS = 3
+    def __init__(self):
+            
+        self.pumpkins = [Pumpkin(name="Mini Pumpkin", cost=1),
+                    Pumpkin(name="Small Pumpkin", cost=2),
+                    Pumpkin(name="Medium Pumpkin", cost=2.5),
+                    Pumpkin(name="Large Pumpkin", cost=3)]
+        self.face_stencils = [FaceStencil(name="Happy Face", quantity=10, cost=1),
+                        FaceStencil(name="Scream Face", quantity=10, cost=1),
+                        FaceStencil(name="Toothy Face", quantity=10, cost=1),
+                        FaceStencil(name="Spooky Face", quantity=10, cost=1)]
+        self.extras = [Extra(name="Small Candle", quantity=10, cost=.25),
+                Extra(name="LED Candle", quantity=10, cost=.25),
+                Extra(name="Spooky Sound Effects", quantity=10, cost=1.25),
+                Extra(name="Sticker Pack", quantity=10, cost=1.00),
+                Extra(name="Paint Kit", quantity=10, cost=3),
+                Extra(name="Dry Ice", quantity=10, cost=.25),
+                Extra(name="Googly Eyes", quantity=10, cost=.25),
+                Extra(name="Glitter", quantity=10, cost=.25)]
 
-    pumpkins = [Pumpkin(name="Mini Pumpkin", cost=1),
-                Pumpkin(name="Small Pumpkin", cost=2),
-                Pumpkin(name="Medium Pumpkin", cost=2.5),
-                Pumpkin(name="Large Pumpkin", cost=3)]
-    face_stencils = [FaceStencil(name="Happy Face", quantity=10, cost=1),
-                    FaceStencil(name="Scream Face", quantity=10, cost=1),
-                    FaceStencil(name="Toothy Face", quantity=10, cost=1),
-                    FaceStencil(name="Spooky Face", quantity=10, cost=1)]
-    extras = [Extra(name="Small Candle", quantity=10, cost=.25),
-            Extra(name="LED Candle", quantity=10, cost=.25),
-            Extra(name="Spooky Sound Effects", quantity=10, cost=1.25),
-            Extra(name="Sticker Pack", quantity=10, cost=1.00),
-            Extra(name="Paint Kit", quantity=10, cost=3),
-            Extra(name="Dry Ice", quantity=10, cost=.25),
-            Extra(name="Googly Eyes", quantity=10, cost=.25),
-            Extra(name="Glitter", quantity=10, cost=.25)]
+        # variables
+        self.remaining_uses = PumpkinMachine.USES_UNTIL_CLEANING
+        self.remaining_stencils =  PumpkinMachine.MAX_STENCILS
+        self.remaining_extras =  PumpkinMachine.MAX_EXTRAS
+        self.total_sales = 0
+        self.total_products = 0
 
-    # variables
-    remaining_uses = USES_UNTIL_CLEANING
-    remaining_stencils = MAX_STENCILS
-    remaining_extras = MAX_EXTRAS
-    total_sales = 0
-    total_products = 0
-
-    inprogress_pumpkin = []
-    currently_selecting = STAGE.Pumpkin
+        self.inprogress_pumpkin = []
+        self.currently_selecting = STAGE.Pumpkin
 
     # rules
     # 1 - pumpkin must be chosen first
@@ -173,7 +174,8 @@ class PumpkinMachine:
     def handle_pay(self, expected, total):
         if self.currently_selecting != STAGE.Pay:
             raise InvalidStageException
-        if total == str(expected):
+        formatted_cost = "${:.2f}".format(expected)
+        if total == str(formatted_cost):
             print("Thank you! Enjoy your Pumpkin and Happy Halloween!")
             self.total_products += 1
             self.total_sales += expected  # <-- TODO increment only if successful
@@ -186,6 +188,7 @@ class PumpkinMachine:
         print(
             f"Current Pumpkin: {','.join([x.name for x in self.inprogress_pumpkin])}")
 
+    """Name: Bhavya Shah; UCID: bs635; Date: 19 October, 2023"""
     def calculate_cost(self):
         total_cost = 0
 
@@ -193,15 +196,17 @@ class PumpkinMachine:
         if self.inprogress_pumpkin and isinstance(self.inprogress_pumpkin[0], Pumpkin):
             total_cost += self.inprogress_pumpkin[0].cost
 
-        # Calculating the cost of the selected face stencils (if there are any)
-        for item in self.inprogress_pumpkin[1:]:
+        # Calculating the cost of the selected face stencils
+        for item in self.inprogress_pumpkin[1:4]:
             if isinstance(item, FaceStencil):
-                total_cost += item.cost
+                if item != "next":
+                    total_cost += item.cost
 
-        # Calculating the cost of the selected extras (if there are any)
+        # Calculating the cost of the selected extras
         for item in self.inprogress_pumpkin:
             if isinstance(item, Extra):
-                total_cost += item.cost
+                if item != "done":
+                    total_cost += item.cost
 
         return total_cost
 
@@ -256,15 +261,23 @@ class PumpkinMachine:
             # move to the next stage/category
         # handle InvalidPaymentException
             # show an appropriate message
+            """Name: Bhavya Shah; UCID: bs635; Date: 19 October, 2023"""
         except OutOfStockException as e:
             print(f"Out of Stock: {e}")
+
+            """Name: Bhavya Shah; UCID: bs635; Date: 19 October, 2023"""
         except NeedsCleaningException:
+            # Prompt the user to clean the machine
             clean_input = input("Machine needs cleaning. Type 'clean' to clean the machine: ")
             if clean_input.lower() == 'clean':
+                # If the user chooses to clean, call the clean_machine() method
                 pm.clean_machine()
                 print("Machine has been cleaned. You can continue.")
             else:
+                # If the user does not initiate cleaning, inform them and continue without cleaning
                 print("Machine cleaning was not initiated. Continuing without cleaning.")
+
+            """Name: Bhavya Shah; UCID: bs635; Date: 19 October, 2023"""
         except InvalidChoiceException:
             if pm.currently_selecting == STAGE.Pumpkin:
                 print("Invalid pumpkin choice. Please choose a valid pumpkin.")
@@ -273,17 +286,27 @@ class PumpkinMachine:
             elif pm.currently_selecting == STAGE.Extra:
                 print("Invalid extra choice. Please choose a valid extra.")
 
+            """Name: Bhavya Shah; UCID: bs635; Date: 19 October, 2023"""
         except ExceededRemainingChoicesException:
             if pm.currently_selecting == STAGE.FaceStencil:
+                # If the exception occurs during the FaceStencil selection stage and the maximum choices have been reached,
+                # inform the user and suggest moving to the next stag
                 print("You have already selected the maximum number of face stencils. Moving to the next stage.")
+            
             elif pm.currently_selecting == STAGE.Extra:
+                # If the exception occurs during the Extra selection stage and the maximum choices have been reached,
+                # inform the user and suggest moving to the next stage
                 print("You have already selected the maximum number of extras. Moving to the next stage.")
             # Move to the next stage/category
             pm.currently_selecting = STAGE(pm.currently_selecting.value + 1)
 
+            """Name: Bhavya Shah; UCID: bs635; Date: 19 October, 2023"""
         except InvalidPaymentException:
+            # If an InvalidPaymentException is raised, it means the user entered an incorrect payment amount.
+            # Inform the user that the payment amount provided is invalid and request the exact payment amount.
             print("Invalid payment amount. Please enter the exact payment amount for your order.")
 
+            """Name: Bhavya Shah; UCID: bs635; Date: 19 October, 2023"""
         except InvalidStageException:
             print("You must select a pumpkin first.")
             pm.currently_selecting = STAGE.Pumpkin
