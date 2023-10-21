@@ -1,0 +1,7 @@
+__pycache__
+.vscode
+.DS_Store
+.pytest_cache
+venv
+M4/__pycache__/MyCalc.cpython-311.pyc
+M4/__pycache__/MyCalc.cpython-311.pyc
