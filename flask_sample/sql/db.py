@@ -61,6 +61,10 @@ class DB:
         return response 
 
     @staticmethod
+    def delete(queryString, *args):
+        return DB.__runQuery(CRUD.DELETE, False, queryString, args)
+        
+    @staticmethod
     def update(queryString, *args):
         return DB.__runQuery(CRUD.UPDATE, False, queryString, args)
 
@@ -124,4 +128,3 @@ class DB:
 if __name__ == "__main__":
     # verifies connection works
     print(DB.selectOne("SELECT 'test' from dual"))
-    print(DB.insertOne("INSERT INTO IS601_Sample (name, val) VALUES (%s, %s)", "test", "sample"))
