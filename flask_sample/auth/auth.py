@@ -18,7 +18,7 @@ def check_duplicate(e):
     import re
     r = re.match(".*IS601_Users.(\w+)", e.args[0].args[1])
     if r:
-        flash(f"The chosen {r.group(1   )} is not available", "warning")
+        flash(f"The chosen {r.group(1   )} is already in use", "warning")
     else:
         flash("Unknown error occurred, please try again", "danger")
         print(e)
@@ -112,6 +112,11 @@ def logout():
 def profile():
     user_id = current_user.get_id()
     form = ProfileForm()
+
+    if not user_id:
+        flash("You must be logged in to access the profile page", "danger")
+        return redirect(url_for("access_denied"))  # Redirect to 401.html
+        
     if form.validate_on_submit():
         is_valid = True
         email = form.email.data

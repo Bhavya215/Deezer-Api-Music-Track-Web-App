@@ -13,6 +13,8 @@ CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 print(CURR_DIR)
 sys.path.append(CURR_DIR)
 
+def access_denied(e):
+    return render_template('401.html'), 401
 # custom error pages
 def page_not_found(e):
     return render_template('404.html'), 404
@@ -20,11 +22,11 @@ def page_not_found(e):
 def permission_denied(e):
     return render_template("403.html"), 403
 
-
 login_manager = flask_login.LoginManager()
 # app = Flask(__name__)
 def create_app(config_filename=''):
     app = Flask(__name__)
+    app.register_error_handler(401, access_denied)
     app.register_error_handler(404, page_not_found)
     app.register_error_handler(403, permission_denied)
     app.secret_key = os.environ.get("SECRET_KEY", "missing_secret")
