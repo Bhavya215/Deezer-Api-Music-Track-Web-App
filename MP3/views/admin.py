@@ -18,6 +18,17 @@ def importCSV():
             flash('No selected file', "warning")
             return redirect(request.url)
         # TODO importcsv-1 check that it's a .csv file, return a proper flash message if it's not and don't attempt to process the file
+        #Bhavya Shah - bs635 - 18 November, 2023
+        # Check if the file is a proper CSV file
+        if file and not file.filename.endswith('.csv'):
+            flash('Please upload a valid CSV file', 'danger')
+            return redirect(request.url)
+
+        if file.filename == '':
+            flash('No selected file', 'warning')
+            return redirect(request.url)
+
+
         if file and secure_filename(file.filename):
             organizations = []
             donations = []
@@ -54,17 +65,48 @@ def importCSV():
             """
             # Note: this reads the file as a stream instead of requiring us to save it, don't modify/remove it
             stream = io.TextIOWrapper(file.stream._file, "UTF8", newline=None)
+
             # TODO importcsv-2 read the csv file stream as a dict
-            for row in ["this is a placeholder"]:
-                pass 
-                # print(row) #example
+            #Bhavya Shah - bs635 - 18 November, 2023
+            csv_reader = csv.DictReader(stream)
+            for row in csv_reader: 
+                #print(row) #example
                 # TODO importcsv-3: extract organization data and append to organization list
                 # as a dict only with organization data if all organization fields are present (refer to above SQL)
+                # Check if all organization fields are present
+                #Bhavya Shah - bs635 - 18 November, 2023
+                if all(field in row for field in ["organization_name", "organization_address", "organization_city", "organization_country", "organization_state", "organization_zip", "organization_website", "organization_description"]):
+                    # Extract organization data and append to the organizations list
+                    organization_data = {
+                        "name": row["organization_name"],
+                        "address": row["organization_address"],
+                        "city": row["organization_city"],
+                        "country": row["organization_country"],
+                        "state": row["organization_state"],
+                        "zip": row["organization_zip"],
+                        "website": row["organization_website"],
+                        "description": row["organization_description"]
+                    }
+                    organizations.append(organization_data)
 
-                
-               
                 # TODO importcsv-4: extract donation data and append to donation list
                 # as a dict only with donation data if all donation fields are present (refer to above SQL)
+                # Bhavya Shah - bs635 - 18 November, 2023
+                # Check if all donation fields are present
+                if all(field in row for field in ["donor_name", "donor_email", "item_name", "item_description", "item_quantity", "organization_name", "donation_date", "comments"]):
+                    # Extract donation data and append to the donations list
+                    donation_data = {
+                        "donor_firstname": row["donor_name"].split()[0],  # Assuming donor_name is in the format "First Last"
+                        "donor_lastname": row["donor_name"].split()[1] if len(row["donor_name"].split()) > 1 else "",  # Extracting last name if available
+                        "donor_email": row["donor_email"],
+                        "item_name": row["item_name"],
+                        "item_description": row["item_description"],
+                        "quantity": row["item_quantity"],
+                        "organization_name": row["organization_name"],
+                        "donation_date": row["donation_date"],
+                        "comments": row["comments"]
+                    }
+                    donations.append(donation_data)
 
                 
                 
@@ -73,23 +115,30 @@ def importCSV():
                 try:
                     result = DB.insertMany(organization_query, organizations)
                     # TODO importcsv-5 display flash message about number of organizations inserted
+                    #Bhavya Shah - bs635 - 18 November, 2023
+                    flash(f"Processed {len(organizations)} organizations", "success")
                 except Exception as e:
                     traceback.print_exc()
                     flash("There was an error loading in the csv data", "danger")
             else:
                 # TODO importcsv-6 display flash message (info) that no organizations were loaded
-                pass
+                #Bhavya Shah - bs635 - 18 November,2023
+                flash("No organizations were loaded/processed", "info")
+
             if len(donations) > 0:
                 print(f"Inserting or updating {len(donations)} donations")
                 try:
                     result = DB.insertMany(donation_query, donations)
                     # TODO importcsv-7 display flash message about number of donations loaded
+                    #Bhavya Shah - bs635 - 18 November,2023
+                    flash(f"Processed {len(donations)} donations", "success")
                 except Exception as e:
                     traceback.print_exc()
                     flash("There was an error loading in the csv data", "danger")
             else:
-                 # TODO importcsv-8 display flash message (info) that no donations were loaded
-                pass
+                # TODO importcsv-8 display flash message (info) that no donations were loaded
+                #Bhavya Shah - bs635 - 18 November,2023
+                flash("No donations were loaded/processed", "info")
             try:
                 result = DB.selectOne("SHOW SESSION STATUS LIKE 'questions'")
                 print(f"Result {result}")
