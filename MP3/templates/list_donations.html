@@ -18,26 +18,67 @@
             sort/order (using allowed_columns and provided partial template)
             limit (default 10)
             ensure all fields prefill with request arg data if provided
+            Bhavya Shah - bs635 - 18 November, 2023
             #}
+            
             <!--first name-->
-
+            <div class="col">
+                <label class="form-label visually-hidden" for="donor_firstname">First Name</label>
+                <input type="text" name="donor_firstname" class="form-control" id="donor_firstname" placeholder="First Name"
+                    value="{{request.args.get('donor_firstname') or ''}}">
+            </div>
             <!--last name-->
-
+            <div class="col">
+                <label class="form-label visually-hidden" for="donor_lastname">Last Name</label>
+                <input type="text" name="donor_lastname" class="form-control" id="donor_lastname" placeholder="Last Name"
+                    value="{{request.args.get('donor_lastname') or ''}}">
+            </div>
             <!--email-->
-
+            <div class="col">
+                <label class="form-label visually-hidden" for="donor_email">Email</label>
+                <input type="text" name="donor_email" class="form-control" id="donor_email" placeholder="Email"
+                    value="{{request.args.get('donor_email') or ''}}">
+            </div>
             <!-- item name-->
-
+            <div class="col">
+                <label class="form-label visually-hidden" for="item_name">Item Name</label>
+                <input type="text" name="item_name" class="form-control" id="item_name" placeholder="Item Name"
+                    value="{{request.args.get('item_name') or ''}}">
+            </div>
             <!--organization-->
             <div class="col">
                 <label class="visually-hidden"
-                    for="organization">Organization</label>
-                {{organization_dropdown(request.args.get("organization"))}}
+                    for="organization_id">Organization</label>
+                {{organization_dropdown(request.args.get("organization_id"))}}
             </div>
             <!-- sort filter -->
             {# TODO pass/set the columns that can be used for sort/filter (i.e. allowed_columns) #}
-            {{sort_filter(cols=[])}}
+            <div class="col">
+                {% set options = ["donor_firstname", "donor_lastname", "donor_email", "organization_name", "item_name", "item_quantity", "modified", "created"] %}
+                <label class="form-label visually-hidden" for="col">Column</label>
+                <select class="form-select" id="col" name="col" value="{{request.args.get('col')}}">
+                    <option value="">Field...</option>
+                    {% for op in options %}
+                    {# using an inline if to output the selected attribute if it matches the op #}
+                    <option {{'selected' if request.args.get('col')==op }} value="{{op}}">{{op|capitalize}}</option>
+                    {% endfor %}
+                </select>
+                </select>
+            </div>
+            <div class="col">
+                <label class="form-label visually visually-hidden" for="order">Order</label>
+                <select class="form-select" id="order" name="order" value="{{request.args.get('order')}}">
+                    <option value="">Choose...</option>
+                    <option {{'selected' if request.args.get('order')=="asc" }} value="asc">Up</option>
+                    <option {{'selected' if request.args.get('order')=="desc" }} value="desc">Down</option>
+                </select>
+            </div>
             <!--limit filter-->
-
+            <div class="col">
+                <label class="form-label visually-hidden" for="limit">Limit</label>
+                <input class="form-control" type="number" min="1" max="100" id="limit" name="limit"
+                    value="{{request.args.get('limit') or '10'}}" />
+            </div>
             <div class="col">
                 <input type="submit" class="btn btn-primary" value="Filter" />
             </div>
@@ -54,11 +95,14 @@
                 {# don't show any id or organization_id columns #}
                 {# IMPORTANT use table column names as the headings, replace _ with space via filter #}
                 <!-- add th elements -->
-
+                {% for r in rows[0] %}
+                <th>{{r}}</th>
+                {% endfor %}
                 <!-- keep this -->
                 <th>Actions</th>
             </tr>
         </thead>
+        
         <tbody>
             {# generate tr with td tags for each piece of data #}
             {# don't show any id or organization_id columns #}
@@ -66,9 +110,21 @@
             an edit button that passes the donation id to donation edit
             a delete button that passes the donation id and the request args to the donation delete route
             #}
+            {% for r in rows %}
+            <tr>
+                {% for v in r.values() %}
+                <td>{{v}}</td>
+                {% endfor %}
+                <td><a href="{{url_for('donations.edit', id=r.get('id'))}}">Edit</a>
+                    {# **request.args spreads the key value pairs to be part of the url#}
+                    {# the idea is to pass it to the next route #}
+                    <a href="{{url_for('donations.delete', id=r.get('id'), **request.args)}}">Delete</a>
+                </td>
+            </tr>
             <!-- iterate over rows and generate proper tr and td elements with the data -->
 
         </tbody>
+        {% endfor %}
         {% else %}
         <tbody>
             <tr>
