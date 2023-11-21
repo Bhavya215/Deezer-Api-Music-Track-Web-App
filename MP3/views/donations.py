@@ -19,7 +19,8 @@ def search():
     # TODO search-1 retrieve donation id as id, donor_firstname, donor_lastname, donor_email, organization_id, item_name, item_description, item_quantity, donation_date, comments, organization_name using a LEFT JOIN
     #Bhavya Shah 19 November, 2023
     query = """
-        SELECT  IS601_MP3_Donations.donor_firstname as 'Donor Firstname',
+        SELECT  IS601_MP3_Donations.id as 'id',
+                IS601_MP3_Donations.donor_firstname as 'Donor Firstname',
                 IS601_MP3_Donations.donor_lastname as 'Donor Lastname',
                 IS601_MP3_Donations.donor_email as 'Donor Email',
                 IS601_MP3_Donations.item_name as 'Item Name',
@@ -37,6 +38,7 @@ def search():
     args = {} # <--- add values to replace %s/%(named)s placeholders
     allowed_columns = ["donor_firstname", "donor_lastname", "donor_email", "organization_name" ,"item_name", "item_quantity", "created", "modified"]
     # TODO search-2 get fn, ln, email, organization_id, column, order, limit from request args
+    d_id = request.args.get("id")
     fn = request.args.get("fn")
     ln = request.args.get("ln")
     email = request.args.get("email")

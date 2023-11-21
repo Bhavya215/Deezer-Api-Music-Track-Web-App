@@ -56,7 +56,9 @@
                     {# IMPORTANT use table column names as the headings, replace _ with space via filter #}
                     <!-- add th elements -->
                     {% for r in rows[0] %}
-                    <th>{{r}}</th>
+                        {% if r not in ['id'] %}
+                            <th>{{ r }}</th>
+                        {% endif %}
                     {% endfor %}
                     <!-- keep this -->
                     <th>Actions</th>
@@ -76,8 +78,10 @@
                 <!-- iterate over rows and generate proper tr and td elements with the data -->
                 {% for r in rows %}
                 <tr>
-                    {% for v in r.values() %}
-                    <td>{{v}}</td>
+                    {% for key, value in r.items() %}
+                        {% if key not in ['id'] %}
+                            <td>{{ value }}</td>
+                        {% endif %}
                     {% endfor %}
                     <td>
                         <a href="{{ url_for('donations.search', organization_id=r.get('id')) }}">View</a>
