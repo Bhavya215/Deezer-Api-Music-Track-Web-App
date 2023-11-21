@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, flash
 from werkzeug.utils import secure_filename
 from sql.db import DB
 import traceback
+import datetime
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
 @admin.route("/import", methods=["GET","POST"])
@@ -95,17 +96,19 @@ def importCSV():
                 # Check if all donation fields are present
                 if all(field in row for field in ["donor_name", "donor_email", "item_name", "item_description", "item_quantity", "organization_name", "donation_date", "comments"]):
                     # Extract donation data and append to the donations list
+                    name = row.get("donor_name")
                     donation_data = {
-                        "donor_firstname": row["donor_name"].split()[0],  # Assuming donor_name is in the format "First Last"
-                        "donor_lastname": row["donor_name"].split()[1] if len(row["donor_name"].split()) > 1 else "",  # Extracting last name if available
-                        "donor_email": row["donor_email"],
-                        "item_name": row["item_name"],
-                        "item_description": row["item_description"],
-                        "quantity": row["item_quantity"],
-                        "organization_name": row["organization_name"],
-                        "donation_date": row["donation_date"],
-                        "comments": row["comments"]
+                        "donor_firstname": name.split(" ")[0],  # Assuming donor_name is in the format "First Last"
+                        "donor_lastname": name.split(" ")[1] if len(name.split()) > 1 else "",  # Extracting last name if available
+                        "donor_email": row.get("donor_email", ""),
+                        "item_name": row.get("item_name", ""),
+                        "item_description": row.get("item_description", ""),
+                        "quantity": int(row.get("item_quantity", 0)) if row.get("item_quantity") else 0,
+                        "organization_name": row.get("organization_name", ""),
+                        "donation_date": datetime.datetime.strptime(row.get("donation_date", ""), "%Y-%m-%d").date() if row.get("donation_date") else None,
+                        "comments": row.get("comments", "")
                     }
+                    
                     donations.append(donation_data)
 
                 

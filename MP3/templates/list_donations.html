@@ -86,7 +86,11 @@
                 {# IMPORTANT use table column names as the headings, replace _ with space via filter #}
                 <!-- add th elements -->
                 {% for r in rows[0] %}
-                <th>{{r}}</th>
+                    {% if r == 'organization_name' %}
+                        <th>Organization Name</th>
+                    {% else %}
+                        <th>{{ r }}</th>
+                    {% endif %}
                 {% endfor %}
                 <!-- keep this -->
                 <th>Actions</th>

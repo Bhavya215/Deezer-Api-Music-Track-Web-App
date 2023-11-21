@@ -7,13 +7,13 @@ organization = Blueprint('organization', __name__, url_prefix='/organization')
 @organization.route("/search", methods=["GET"])
 def search():
     rows = []
+    organization_id = request.args.get("organization_id")
     # DO NOT DELETE PROVIDED COMMENTS
     # TODO search-1 retrieve id, name, address, city, country, state, zip, website, donation count as donations for the organization
     # don't do SELECT * and replace the below "..." portion
     
     query = """
         SELECT
-            IS601_MP3_Organizations.id as id, 
             IS601_MP3_Organizations.name as name, 
             IS601_MP3_Organizations.address as address, 
             IS601_MP3_Organizations.city as city, 
@@ -21,7 +21,8 @@ def search():
             IS601_MP3_Organizations.state as state, 
             IS601_MP3_Organizations.zip as zip, 
             IS601_MP3_Organizations.website as website,
-            (SELECT COUNT(*) FROM IS601_MP3_Donations WHERE IS601_MP3_Donations.organization_id = IS601_MP3_Organizations.id) as donations
+            (SELECT COUNT(*) FROM IS601_MP3_Donations WHERE IS601_MP3_Donations.organization_id = IS601_MP3_Organizations.id) as donations,
+            IS601_MP3_Organizations.id
         FROM
             IS601_MP3_Organizations
         WHERE 1=1
@@ -39,9 +40,10 @@ def search():
     # TODO search-2 get name, country, state, column, order, limit request args
     allowed_columns = ["name", "city", "country", "state", "modified", "created"]
     name = request.args.get("name")
+    city = request.args.get("city")
     country = request.args.get("country")
     state = request.args.get("state")
-    column = request.args.get("col")
+    column = request.args.get("column")
     order = request.args.get("order")
 
     # TODO search-3 append a LIKE filter for name if provided
@@ -112,13 +114,15 @@ def add():
 
         # TODO add-1 retrieve form data for name, address, city, state, country, zip, website, description
         name = request.form.get("name")
+        description = request.form.get("description", "")
         address = request.form.get("address")
         city = request.form.get("city")
         state = request.form.get("state")
         country = request.form.get("country")
         zip_code = request.form.get("zip")
-        website = request.form.get("website")
-        description = request.form.get("description", "")
+        website = request.form.get("website", "")
+        print(address)
+        print(city)
 
         # TODO add-2 name is required (flash proper error message)
         if not name:
@@ -201,6 +205,7 @@ def edit():
         data = {"id": id}  # use this as needed, can convert to tuple if necessary
         # TODO edit-2 retrieve form data for name, address, city, state, country, zip, website
         name = request.form.get("name")
+        description = request.form.get("description")
         address = request.form.get("address")
         city = request.form.get("city")
         state = request.form.get("state")
@@ -256,6 +261,7 @@ def edit():
         # populate data dict with mappings
         data.update({
             "name": name,
+            "description": description,
             "address": address,
             "city": city,
             "state": state,
@@ -274,6 +280,7 @@ def edit():
                 UPDATE IS601_MP3_Organizations
                 SET
                     name = %(name)s,
+                    description = %(description)s,
                     address = %(address)s,
                     city = %(city)s,
                     state = %(state)s,
@@ -296,7 +303,7 @@ def edit():
         # TODO edit-12 fetch the updated data
         result = DB.selectOne("""
         SELECT
-            id, name, address, city, state, country, zip, website, created, modified
+            id, name, description, address, city, state, country, zip, website, created, modified
         FROM
             IS601_MP3_Organizations
         WHERE

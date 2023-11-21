@@ -24,26 +24,14 @@
             <!-- country state filter-->
             {{country_state_selector(layout="horizontal", country=request.args.get('country'), state=request.args.get('state'))}}
             <!-- sort filter -->
-            {# TODO pass/set the columns that can be used for sort/filter (i.e. allowed_columns) #}
-            <div class="col">
-                {% set options = ["name", "city", "country", "state", "created", "modified"] %}
-                <label class="form-label visually-hidden" for="col">Column</label>
-                <select class="form-select" id="col" name="col" value="{{request.args.get('col')}}">
-                    <option value="">Field...</option>
-                    {% for op in options %}
-                    {# using an inline if to output the selected attribute if it matches the op #}
-                    <option {{'selected' if request.args.get('col')==op }} value="{{op}}">{{op|capitalize}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col">
-                <label class="form-label visually visually-hidden" for="order">Order</label>
-                <select class="form-select" id="order" name="order" value="{{request.args.get('order')}}">
-                    <option value="">Choose...</option>
-                    <option {{'selected' if request.args.get('order')=="asc" }} value="asc">Up</option>
-                    <option {{'selected' if request.args.get('order')=="desc" }} value="desc">Down</option>
-                </select>
-            </div>
+            {{ sort_filter(cols=[
+                ("name", "Name"),
+                ("city", "City"),
+                ("country", "Country"),
+                ("state", "State"),
+                ("created", "Created"),
+                ("modified", "Modified")
+            ]) }}
             <!--limit filter-->
             <div class="col">
                 <label class="form-label visually-hidden" for="limit">Limit</label>

@@ -27,9 +27,9 @@ def search():
                 IS601_MP3_Donations.item_quantity as 'Item Quantity',
                 IS601_MP3_Donations.donation_date as 'Donation Date',
                 IS601_MP3_Donations.comments as Comments,
+                IS601_MP3_Organizations.name AS organization_name,
                 IS601_MP3_Donations.created as created,
-                IS601_MP3_Donations.modified as modified,
-                IS601_MP3_Organizations.name AS 'Organization Name'
+                IS601_MP3_Donations.modified as modified
         FROM IS601_MP3_Donations
         LEFT JOIN IS601_MP3_Organizations ON IS601_MP3_Donations.organization_id = IS601_MP3_Organizations.id
         WHERE 1=1
@@ -127,6 +127,7 @@ def search():
             # Fetch organization name based on organization_id
             result = DB.selectOne("SELECT name FROM IS601_MP3_Organizations WHERE id = %s", organization_id)
             if result.status:
+                organization_id = result.row.get("id")
                 organization_name = result.row.get("name")
             else:
                 # TODO search-13 make this user-friendly
