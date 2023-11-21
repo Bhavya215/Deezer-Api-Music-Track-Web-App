@@ -166,7 +166,7 @@ def test_donation_delete(client, rand_org):
 )
 def test_donation_list(allowed_column, fake_donation_2,client):
     cols = ["donor_firstname",
-                 "donor_lastname",
+                "donor_lastname",
                  "donor_email",
                  "item_name",
                  "item_quantity",

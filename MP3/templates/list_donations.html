@@ -23,20 +23,20 @@
             
             <!--first name-->
             <div class="col">
-                <label class="form-label visually-hidden" for="donor_firstname">First Name</label>
-                <input type="text" name="donor_firstname" class="form-control" id="donor_firstname" placeholder="First Name"
+                <label class="form-label visually-hidden" for="fn">First Name</label>
+                <input type="text" name="fn" class="form-control" id="fn" placeholder="First Name"
                     value="{{request.args.get('donor_firstname') or ''}}">
             </div>
             <!--last name-->
             <div class="col">
-                <label class="form-label visually-hidden" for="donor_lastname">Last Name</label>
-                <input type="text" name="donor_lastname" class="form-control" id="donor_lastname" placeholder="Last Name"
+                <label class="form-label visually-hidden" for="ln">Last Name</label>
+                <input type="text" name="ln" class="form-control" id="ln" placeholder="Last Name"
                     value="{{request.args.get('donor_lastname') or ''}}">
             </div>
             <!--email-->
             <div class="col">
-                <label class="form-label visually-hidden" for="donor_email">Email</label>
-                <input type="text" name="donor_email" class="form-control" id="donor_email" placeholder="Email"
+                <label class="form-label visually-hidden" for="email">Email</label>
+                <input type="text" name="email" class="form-control" id="email" placeholder="Email"
                     value="{{request.args.get('donor_email') or ''}}">
             </div>
             <!-- item name-->
@@ -53,26 +53,16 @@
             </div>
             <!-- sort filter -->
             {# TODO pass/set the columns that can be used for sort/filter (i.e. allowed_columns) #}
-            <div class="col">
-                {% set options = ["donor_firstname", "donor_lastname", "donor_email", "organization_name", "item_name", "item_quantity", "modified", "created"] %}
-                <label class="form-label visually-hidden" for="col">Column</label>
-                <select class="form-select" id="col" name="col" value="{{request.args.get('col')}}">
-                    <option value="">Field...</option>
-                    {% for op in options %}
-                    {# using an inline if to output the selected attribute if it matches the op #}
-                    <option {{'selected' if request.args.get('col')==op }} value="{{op}}">{{op|capitalize}}</option>
-                    {% endfor %}
-                </select>
-                </select>
-            </div>
-            <div class="col">
-                <label class="form-label visually visually-hidden" for="order">Order</label>
-                <select class="form-select" id="order" name="order" value="{{request.args.get('order')}}">
-                    <option value="">Choose...</option>
-                    <option {{'selected' if request.args.get('order')=="asc" }} value="asc">Up</option>
-                    <option {{'selected' if request.args.get('order')=="desc" }} value="desc">Down</option>
-                </select>
-            </div>
+            {{ sort_filter(cols=[
+                ("donor_firstname", "First Name"),
+                ("donor_lastname", "Last Name"),
+                ("donor_email", "Email"),
+                ("organization_name", "Organization"),
+                ("item_name", "Item Name"),
+                ("item_quantity", "Item Quantity"),
+                ("modified", "Modified"),
+                ("created", "Created")
+            ]) }}
             <!--limit filter-->
             <div class="col">
                 <label class="form-label visually-hidden" for="limit">Limit</label>

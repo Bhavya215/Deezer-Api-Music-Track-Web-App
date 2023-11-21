@@ -16,14 +16,40 @@
             ensure all fields prefill with request arg data if provided
             #}
             <!--name filter-->
-
+            <div class="col">
+                <label class="form-label visually-hidden" for="name">Organization Name</label>
+                <input type="text" name="name" class="form-control" id="name" placeholder="Organization Name"
+                    value="{{request.args.get('name') or ''}}">
+            </div>
             <!-- country state filter-->
-            {{country_state_selector(layout="horizontal")}}
+            {{country_state_selector(layout="horizontal", country=request.args.get('country'), state=request.args.get('state'))}}
             <!-- sort filter -->
             {# TODO pass/set the columns that can be used for sort/filter (i.e. allowed_columns) #}
-            {{sort_filter(cols=[])}}
+            <div class="col">
+                {% set options = ["name", "city", "country", "state", "created", "modified"] %}
+                <label class="form-label visually-hidden" for="col">Column</label>
+                <select class="form-select" id="col" name="col" value="{{request.args.get('col')}}">
+                    <option value="">Field...</option>
+                    {% for op in options %}
+                    {# using an inline if to output the selected attribute if it matches the op #}
+                    <option {{'selected' if request.args.get('col')==op }} value="{{op}}">{{op|capitalize}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <label class="form-label visually visually-hidden" for="order">Order</label>
+                <select class="form-select" id="order" name="order" value="{{request.args.get('order')}}">
+                    <option value="">Choose...</option>
+                    <option {{'selected' if request.args.get('order')=="asc" }} value="asc">Up</option>
+                    <option {{'selected' if request.args.get('order')=="desc" }} value="desc">Down</option>
+                </select>
+            </div>
             <!--limit filter-->
-
+            <div class="col">
+                <label class="form-label visually-hidden" for="limit">Limit</label>
+                <input class="form-control" type="number" min="1" max="100" id="limit" name="limit"
+                    value="{{request.args.get('limit') or '10'}}" />
+            </div>
             <div class="col">
                 <input type="submit" class="btn btn-primary" value="Filter" />
             </div>
@@ -41,7 +67,9 @@
                     {# don't show any id or organization_id columns #}
                     {# IMPORTANT use table column names as the headings, replace _ with space via filter #}
                     <!-- add th elements -->
-
+                    {% for r in rows[0] %}
+                    <th>{{r}}</th>
+                    {% endfor %}
                     <!-- keep this -->
                     <th>Actions</th>
                 </tr>
@@ -58,8 +86,20 @@
                 a delete button that passes the organization id and the request args to the organization delete route
                 #}
                 <!-- iterate over rows and generate proper tr and td elements with the data -->
+                {% for r in rows %}
+                <tr>
+                    {% for v in r.values() %}
+                    <td>{{v}}</td>
+                    {% endfor %}
+                    <td>
+                        <a href="{{ url_for('donations.search', organization_id=r.get('id')) }}">View</a>
+                        <a href="{{ url_for('organization.edit', id=r.get('id')) }}">Edit</a>
+                        <a href="{{ url_for('organization.delete', id=r.get('id'), **request.args) }}" >Delete</a>
+                    </td>
+                </tr>
 
             </tbody>
+            {% endfor %}
             {% else %}
             <tbody>
                 <tr>

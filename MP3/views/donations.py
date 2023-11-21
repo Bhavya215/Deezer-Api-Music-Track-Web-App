@@ -19,17 +19,17 @@ def search():
     # TODO search-1 retrieve donation id as id, donor_firstname, donor_lastname, donor_email, organization_id, item_name, item_description, item_quantity, donation_date, comments, organization_name using a LEFT JOIN
     #Bhavya Shah 19 November, 2023
     query = """
-        SELECT IS601_MP3_Donations.id as id,
-                IS601_MP3_Donations.donor_firstname,
-                IS601_MP3_Donations.donor_lastname,
-                IS601_MP3_Donations.donor_email,
-                IS601_MP3_Donations.organization_id,
-                IS601_MP3_Donations.item_name,
-                IS601_MP3_Donations.item_description,
-                IS601_MP3_Donations.item_quantity,
-                IS601_MP3_Donations.donation_date,
-                IS601_MP3_Donations.comments,
-                IS601_MP3_Organizations.name AS organization_name
+        SELECT  IS601_MP3_Donations.donor_firstname as 'Donor Firstname',
+                IS601_MP3_Donations.donor_lastname as 'Donor Lastname',
+                IS601_MP3_Donations.donor_email as 'Donor Email',
+                IS601_MP3_Donations.item_name as 'Item Name',
+                IS601_MP3_Donations.item_description as 'Item Description',
+                IS601_MP3_Donations.item_quantity as 'Item Quantity',
+                IS601_MP3_Donations.donation_date as 'Donation Date',
+                IS601_MP3_Donations.comments as Comments,
+                IS601_MP3_Donations.created as created,
+                IS601_MP3_Donations.modified as modified,
+                IS601_MP3_Organizations.name AS 'Organization Name'
         FROM IS601_MP3_Donations
         LEFT JOIN IS601_MP3_Organizations ON IS601_MP3_Donations.organization_id = IS601_MP3_Organizations.id
         WHERE 1=1
@@ -37,12 +37,12 @@ def search():
     args = {} # <--- add values to replace %s/%(named)s placeholders
     allowed_columns = ["donor_firstname", "donor_lastname", "donor_email", "organization_name" ,"item_name", "item_quantity", "created", "modified"]
     # TODO search-2 get fn, ln, email, organization_id, column, order, limit from request args
-    fn = request.args.get("donor_firstname")
-    ln = request.args.get("donor_lastname")
-    email = request.args.get("donor_email")
+    fn = request.args.get("fn")
+    ln = request.args.get("ln")
+    email = request.args.get("email")
     item_name = request.args.get("item_name")
     organization_id = request.args.get("organization_id")
-    column = request.args.get("col")
+    column = request.args.get("column")
     order = request.args.get("order")
     limit = request.args.get("limit", 10)
 
@@ -99,8 +99,8 @@ def search():
         flash("Limit must be a number", "danger")
         has_error = True
 
-    #print("query",query)
-    #print("args", args)
+    print("query",query)
+    print("args", args)
     # Check if there are errors before executing the query
     if not has_error:
         try:
@@ -139,7 +139,7 @@ def search():
             flash("An error occurred while fetching organization name. Please try again later.", "danger")
     else:
         organization_name = ""  
-        
+
     return render_template("list_donations.html", organization_name=organization_name, rows=rows, allowed_columns=allowed_columns)
 
 
@@ -372,23 +372,29 @@ def edit():
 @donations.route("/delete", methods=["GET"])
 def delete():
     # TODO delete-1 if id is missing, flash necessary message and redirect to search
+    # Bhavya Shah - bs635 - 18 November,2023
     donation_id = request.args.get("id")
     if not donation_id:
         flash("Donation ID is required", "danger")
         return redirect(url_for("donations.search"))
 
     # TODO delete-2 delete donation by id (fetch the id from the request)
+    # Bhavya Shah - bs635 - 18 November,2023
     try:
         result = DB.delete("DELETE FROM IS601_MP3_Donations WHERE id = %s", donation_id)
         if result.status:
             # TODO delete-3 ensure a flash message shows for successful delete
+            # Bhavya Shah - bs635 - 18 November,2023
             flash("Deleted record", "success")
         else:
             # TODO delete-4 handle error case and show flash message
+            # Bhavya Shah - bs635 - 18 November,2023
             flash("An error occurred while deleting the record. Please try again.", "danger")
     except Exception as e:
         # TODO delete-4 handle error case and show flash message
+        # Bhavya Shah - bs635 - 18 November,2023
         flash(f"Delete error: {e}", "danger")
 
     # TODO delete-5 redirect to donation search
+    # Bhavya Shah - bs635 - 18 November,2023
     return redirect(url_for("donations.search"))
