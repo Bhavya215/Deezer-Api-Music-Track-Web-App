@@ -70,45 +70,49 @@ def importCSV():
             # TODO importcsv-2 read the csv file stream as a dict
             #Bhavya Shah - bs635 - 18 November, 2023
             csv_reader = csv.DictReader(stream)
-            for row in csv_reader: 
-                #print(row) #example
+            for row in csv_reader:
+                print(row) #example
                 # TODO importcsv-3: extract organization data and append to organization list
                 # as a dict only with organization data if all organization fields are present (refer to above SQL)
                 # Check if all organization fields are present
                 #Bhavya Shah - bs635 - 18 November, 2023
-                if all(field in row for field in ["organization_name", "organization_address", "organization_city", "organization_country", "organization_state", "organization_zip", "organization_website", "organization_description"]):
-                    # Extract organization data and append to the organizations list
-                    organization_data = {
-                        "name": row["organization_name"],
-                        "address": row["organization_address"],
-                        "city": row["organization_city"],
-                        "country": row["organization_country"],
-                        "state": row["organization_state"],
-                        "zip": row["organization_zip"],
-                        "website": row["organization_website"],
-                        "description": row["organization_description"]
-                    }
+                # Extract organization data and append to the organizations list
+                organization_data = {
+                    "name": row["organization_name"],
+                    "address": row["organization_address"],
+                    "city": row["organization_city"],
+                    "country": row["organization_country"],
+                    "state": row["organization_state"],
+                    "zip": row["organization_zip"],
+                    "website": row["organization_website"],
+                    "description": row["organization_description"]
+                }
+                # Check if all organization fields are present and all values are provided
+                if all(value for value in organization_data.values()):
+                    # Add organization data to the organizations list
                     organizations.append(organization_data)
 
                 # TODO importcsv-4: extract donation data and append to donation list
                 # as a dict only with donation data if all donation fields are present (refer to above SQL)
                 # Bhavya Shah - bs635 - 18 November, 2023
                 # Check if all donation fields are present
-                if all(field in row for field in ["donor_name", "donor_email", "item_name", "item_description", "item_quantity", "organization_name", "donation_date", "comments"]):
+                
                     # Extract donation data and append to the donations list
-                    name = row.get("donor_name")
-                    donation_data = {
-                        "donor_firstname": name.split(" ")[0],  # Assuming donor_name is in the format "First Last"
-                        "donor_lastname": name.split(" ")[1] if len(name.split()) > 1 else "",  # Extracting last name if available
-                        "donor_email": row.get("donor_email", ""),
-                        "item_name": row.get("item_name", ""),
-                        "item_description": row.get("item_description", ""),
-                        "quantity": int(row.get("item_quantity", 0)) if row.get("item_quantity") else 0,
-                        "organization_name": row.get("organization_name", ""),
-                        "donation_date": datetime.datetime.strptime(row.get("donation_date", ""), "%Y-%m-%d").date() if row.get("donation_date") else None,
-                        "comments": row.get("comments", "")
-                    }
-                    
+                name = row.get("donor_name")
+                donation_data = {
+                    "donor_firstname": name.split(" ")[0],  # Assuming donor_name is in the format "First Last"
+                    "donor_lastname": name.split(" ")[1] if len(name.split()) > 1 else "",  # Extracting last name if available
+                    "donor_email": row.get("donor_email"),
+                    "item_name": row.get("item_name"),
+                    "item_description": row.get("item_description"),
+                    "quantity": row.get("item_quantity"),
+                    "organization_name": row.get("organization_name"),
+                    "donation_date": row.get("donation_date"),
+                    "comments": row.get("comments")
+                }
+                # Check if all donation fields are present and all values are provided
+                if all(value for value in donation_data.values()):
+                    # Add donation data to the donations list
                     donations.append(donation_data)
 
                 
