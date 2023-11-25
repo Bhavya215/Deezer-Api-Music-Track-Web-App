@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+{% block title %}{{ "Edit" if donation.get("id") else "Create" }} Donation{% endblock %}
+{% block content %}
+{% from "organization_dropdown.html" import organization_dropdown %}
+<div class="container-fluid">
+    <div class="h1">{{ "Edit" if donation.get("id") else "Create" }} Donation</div>
+    <div>
+        <form method="POST">
+            <!--donor first name-->
+            <div class="form-group mb-3">
+                <label class="form-label" for="donor_firstname">First Name:</label>
+                <input type = "text" class="form-control" id="donor_firstname" name="donor_firstname"  value="{{ donation.donor_firstname }}" required  >
+            </div>
+
+            <!--donor last name-->
+            <div class="form-group mb-3">
+                <label class="form-label" for="donor_lastname"> Last Name:</label>
+                <input type = "text" class="form-control" id="donor_lastname" name="donor_lastname" value="{{ donation.donor_lastname }}" required>
+            </div>
+
+            <!--donor email-->
+            <div class="form-group mb-3">
+                <label class="form-label" for="donor_email">Donor Email:</label>
+                <input type = "text" class="form-control" id="donor_email" name="donor_email" value="{{ donation.donor_email }}" required>
+            </div>
+
+            <!--item name-->
+            <div class="form-group mb-3">
+                <label class="form-label" for="item_name">Item Name:</label>
+                <input type = "text" class="form-control" id="item_name" name="item_name" value="{{ donation.item_name }}" required>
+            </div>
+
+            <!--item_description -->
+            <div class="form-group mb-3">
+                <div class = "form-floating">
+                    
+                    <textarea class="form-control" id="item_description" name="item_description">{{ donation.item_description }}</textarea>
+                    <label for="item_description">Item Description:</label>
+                </div>
+            </div>
+
+            <!--item_quantity-->
+            <div class="form-group mb-3">
+                <label class="form-label" for="item_quantity">Item Quantity:</label>
+                <input type="number" class="form-control" id="item_quantity" name="item_quantity" value="{{ donation.item_quantity }}" required min = "1">
+            </div>
+
+            <!--donation date-->
+            <div class="form-group mb-3">
+                <label class="form-label" for="donation_date">Donation Date (YYYY-MM-DD):</label>
+                <input type="date" class="form-control" id="donation_date" name="donation_date" value="{{ donation.donation_date }}" required>
+            </div>
+
+            <!-- comments -->
+            <div class="form-group mb-3">
+                <div class = "form-floating">
+                    <textarea class="form-control" id="comments" name="comments">{{ donation.comments }}</textarea>
+                    <label for="comments">Comments:</label>
+                </div>
+                
+                
+            </div>
+
+            <!-- organization selection -->
+            <div class="form-group mb-3">
+                <label for="organization_id">Organization:</label>
+                {{ organization_dropdown(val=donation.get("organization_id")) }}
+            </div>
+
+            <input type="submit" class="btn btn-primary" value="Save Donation" />
+        </form>
+    </div>
+</div>
+{% endblock %}
