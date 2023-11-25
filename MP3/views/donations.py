@@ -38,6 +38,7 @@ def search():
     args = {} # <--- add values to replace %s/%(named)s placeholders
     allowed_columns = ["donor_firstname", "donor_lastname", "donor_email", "organization_name" ,"item_name", "item_quantity", "created", "modified"]
     # TODO search-2 get fn, ln, email, organization_id, column, order, limit from request args
+    #Bhavya Shah 19 November, 2023
     d_id = request.args.get("id")
     fn = request.args.get("fn")
     ln = request.args.get("ln")
@@ -86,8 +87,7 @@ def search():
 
     # TODO search-9 append limit (default 10) or limit greater than 1 and less than or equal to 100
     #Bhavya Shah 19 November, 2023
-    # TODO search-10 provide a proper error message if limit isn't a number or if it's out of bounds
-    #Bhavya Shah 19 November, 2023
+    
     try:
         if limit:
             limit = int(limit)
@@ -97,6 +97,8 @@ def search():
             else:
                 query += " LIMIT %(limit)s"
                 args["limit"] = limit
+    # TODO search-10 provide a proper error message if limit isn't a number or if it's out of bounds
+    #Bhavya Shah 19 November, 2023
     except ValueError:
         flash("Limit must be a number", "danger")
         has_error = True
@@ -115,7 +117,7 @@ def search():
                 # Bhavya Shah - bs635 - 19 November, 2023
                 flash("An error occurred while executing the search query. Please try again.", "danger")
         except Exception as e:
-            # TODO search-12 make this user-friendly
+            # TODO search-11 make this user-friendly
             # Bhavya Shah - bs635 - 19 November, 2023
             print(f"search error {e}")
             flash("An error occurred while executing the search query. Please try again later.", "danger")
@@ -132,11 +134,11 @@ def search():
                 organization_id = result.row.get("id")
                 organization_name = result.row.get("name")
             else:
-                # TODO search-13 make this user-friendly
+                # TODO search-11 make this user-friendly
                 # Bhavya Shah - bs635 - 19 November, 2023
                 flash("An error occurred while fetching organization name. Please try again later.", "danger")
         except Exception as e:
-            # TODO search-14 make this user-friendly
+            # TODO search-11 make this user-friendly
             # Bhavya Shah - bs635 - 19 November, 2023
             print(f"organization name fetch error {e}")
             flash("An error occurred while fetching organization name. Please try again later.", "danger")
@@ -166,11 +168,7 @@ def add():
         # TODO add-4 donor_email is required (flash proper error message)
         # TODO add-4a email must be in proper format (flash proper message)
         # TODO add-5 organization_id is required (flash proper error message)
-        # TODO add-6 item_name is required (flash proper error message)
-        # TODO add-7 item_description is optional
-        # TODO add-8 item_quantity is required and must be more than 0 (flash proper error message)
-        # TODO add-9 donation_date is required and must be within the past 30 days
-        # TODO add-10 comments are optional
+        
         # Bhavya Shah - bs635 - 18 November,2023
         has_error = False # use this to control whether or not an insert occurs
         
@@ -190,6 +188,12 @@ def add():
         if not organization_id:
             has_error = True
             flash("Organization is required", "danger")
+
+        # TODO add-6 item_name is required (flash proper error message)
+        # TODO add-7 item_description is optional
+        # TODO add-8 item_quantity is required and must be more than 0 (flash proper error message)
+        # TODO add-9 donation_date is required and must be within the past 30 days
+        # TODO add-10 comments are optional
         if not item_name:
             has_error = True
             flash("Item name is required", "danger")
@@ -262,7 +266,7 @@ def edit():
             donation_date = request.form.get("donation_date")
             comments = request.form.get("comments", "")
             
-            print(donor_lastname)
+            #print(donor_lastname)
             
             # TODO add-3 donor_firstname is required (flash proper error message)
             # Bhavya Shah - bs635 - 18 November,2023
@@ -353,7 +357,7 @@ def edit():
                     flash("An error occurred while updating the record. Please try again later.", "danger")
         
         try:
-            # TODO edit-14 fetch the updated data 
+            # TODO edit-12 fetch the updated data 
             # Bhavya Shah - bs635 - 18 November,2023
             result = DB.selectOne("""SELECT 
             IS601_MP3_Donations.id, donor_firstname, donor_lastname, donor_email, organization_id, item_name, item_description, item_quantity, donation_date, comments
