@@ -64,6 +64,7 @@ class API:
             params[config["PARAMS_KEY_NAME"]] = config["name"]
 
         url = config["BASE_URL"] + url
+        print(url)
 
         if verb == HTTP.GET:
             response = requests.get(url, headers=headers, params=params)

@@ -2,18 +2,62 @@
 {% block title %}View Track{% endblock %}
 
 {% block content %}
+<style>
+    /* Custom styles for the View Track page */
+    .custom-card {
+        border: 2px solid #676060; /* Black border for the card */
+        border-radius: 10px; /* Rounded corners */
+        background-color: #f0f0f1; /* Black background */
+        color: #ffffff; /* White text color */
+        box-shadow: 0 4px 8px rgba(77, 77, 77, 0.2); /* Soft black shadow */
+    }
+
+    .custom-list-item {
+        background-color: #e3e2ec; /* Light purple background for list items */
+        color: #090909; /* Dark gray text color */
+        margin-bottom: 8px; /* Spacing between list items */
+        padding: 10px; /* Add some padding for better spacing */
+        border: 1px solid #9988e7; /* Darker purple border for list items */
+        border-radius: 5px; /* Rounded corners */
+    }
+
+    .btn-back {
+        background-color: #4d4d4d; /* Black background for the Back button */
+        color: #ffffff; /* White text color */
+        border: none; /* No border */
+    }
+
+    .btn-back:hover {
+        background-color: #333333; /* Darker black background on hover */
+    }
+
+    .h3 {
+        color: rgb(1, 0, 7); /* Light purple color for headings */
+    }
+</style>
+
 <div class="container-fluid">
-    <div class="h3">View Track</div>
-    <div class="card">
+    <div class="h3 mb-4">View Track</div>
+    <div class="card custom-card">
         <div class="card-body">
             <ul class="list-group">
-                {% for k,v in track.items() %}
-                <li class="list-group-item">{{k}} - {{v}}</li>
+                {% for k, v in track.items() %}
+                    {% if k == 'Track Link' %}
+                        <li class="list-group-item custom-list-item">
+                            <span class="font-weight-bold">{{ k }}</span>: 
+                            <a href="{{ v }}" target="_blank">{{ v }}</a>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item custom-list-item">
+                            <span class="font-weight-bold">{{ k }}</span>: {{ v }}
+                        </li>
+                    {% endif %}
                 {% endfor %}
             </ul>
 
-            <a href="{{ url_for('tracks.list') }}"
-                class="btn btn-secondary">Back</a>
+            <div class="mt-4">
+                <a href="{{ url_for('tracks.list') }}" class="btn btn-secondary btn-back">Back</a>
+            </div>
         </div>
     </div>
 </div>

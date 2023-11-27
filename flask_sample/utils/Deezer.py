@@ -32,19 +32,19 @@ class Deezer(API):
 
 
 if __name__ == "__main__":
-    resp1 = Deezer.search("cruel summer")
-    resp2 = Deezer.Artist("12246")
+    resp1 = Deezer.search("Eminem")
+    #resp2 = Deezer.Artist("12246")
     
     # print(resp1)
     # print(resp2)
 
     if resp1 and "data" in resp1:
         from utils.lazy import DictToObject
-        data_point_search = resp1["data"][0]
-        resp = DictToObject(data_point_search)
-        artist = DictToObject(resp.artist)
+        data_point_search = resp1["data"][4]
+        #resp = DictToObject(data_point_search)
+        #artist = DictToObject(resp.artist)
         print("Search Result:")
-        print(artist.id)
+        print(data_point_search)
 
     # #Extracting one data point from the artist response
     # if resp2 and "data" in resp2:

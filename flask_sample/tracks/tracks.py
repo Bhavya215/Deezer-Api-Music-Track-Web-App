@@ -8,6 +8,8 @@ tracks = Blueprint('tracks', __name__, url_prefix='/tracks', template_folder='te
 @tracks.route("/fetch", methods=["GET", "POST"])
 @admin_permission.require(http_exception=403)
 def fetch():
+    i=1
+    t_id = None
     form = TrackSearchForm()
     if form.validate_on_submit():
         try:
@@ -17,8 +19,16 @@ def fetch():
             result = Deezer.search(form.q.data)
             if result:
                 #print(result)
-                resp = result["data"][0]
-                print(resp)
+                for i in range(0,10):
+                    resp = result["data"][i]
+                    res = DictToObject(resp)
+                    #print(resp)
+                    t_id = DB.selectOne("""Select track_id from IS601_Tracks WHERE track_id = %s""", res.id)
+                    print(t_id.row)
+                    if t_id.row is None:
+                        print("Exit")
+                        break
+                #print(resp)
                 result = DictToObject(resp)
                 artist = DictToObject(result.artist)
                 album = DictToObject(result.album)
@@ -48,6 +58,7 @@ def fetch():
 def add():
     form = TrackForm()
     if form.validate_on_submit():
+        print(form.data)
         try:
             # Create a new stock record in the database
             result = DB.insertOne(
@@ -91,11 +102,76 @@ def edit():
     return render_template("track_form.html", form=form, type="Edit")
 
 @tracks.route("/list", methods=["GET"])
-@admin_permission.require(http_exception=403)
+
 def list():
     rows = []
+    has_error = False
+
+    query = "SELECT title as 'Name', title_short as 'Short Name', track_link as 'Track Link', duration as 'Duration', artist_name as 'Artist', album_name as 'Album', track_rank as 'Ranking', id as 'ID', track_id as 'Track ID', readable FROM IS601_Tracks WHERE 1=1"
+
+    args = {}  # <--- add values to replace %s/%(named)s placeholders
+    allowed_columns = ["title", "title_short", "duration", "track_rank", "artist_name", "album_name", "created", "modified"]
+    track_id = request.args.get("id")
+    search = request.args.get("search")
+    title = request.args.get("title")
+    title_short = request.args.get("title_short")
+    duration = request.args.get("duration")
+    artist_name = request.args.get("artist")
+    album_name = request.args.get("album_name")
+    column = request.args.get("column")
+    order = request.args.get("order")
+    limit = request.args.get("limit", 10)
+    print(search)
+    if search:
+        query += " AND IS601_Tracks.title LIKE %(search)s OR IS601_Tracks.artist_name LIKE %(search)s OR IS601_Tracks.album_name LIKE %(search)s"
+        args["search"] = f"%{search}%"
+
+    if title:
+        query += " AND IS601_Tracks.title LIKE %(title)s"
+        args["title"] = f"%{title}%"
+
+    
+    if title_short:
+        query += " AND IS601_Tracks.title_short LIKE %(title_short)s"
+        args["title_short"] = f"%{title_short}%"
+
+    
+    if duration:
+        query += " AND IS601_Tracks.duration LIKE %(duration)s"
+        args["duration"] = f"%{duration}%"
+
+    
+    if artist_name:
+        query += " AND IS601_Tracks.artist_name LIKE %(artist_name)s"
+        args["artist_name"] = f"%{artist_name}%"
+
+    
+    if album_name:
+        query += " AND al.title LIKE %(album_name)s"
+        args["album_name"] = f"%{album_name}%"
+
+    
+    if column and order:
+        if column in allowed_columns and order in ["asc", "desc"]:
+            query += f" ORDER BY {column} {order}"
+
+    
     try:
-        result = DB.selectAll("SELECT id as 'ID', track_id as 'Track ID', readable, title as 'Name', title_short as 'Short Name', track_link as 'Track Link' , duration as 'Duration', track_rank as 'Ranking' , artist_name as 'Artist', album_name as 'Album' FROM IS601_Tracks LIMIT 100")
+        if limit:
+            limit = int(limit)
+            if not 1 <= limit <= 100:
+                flash("Limit must be between 1 and 100", "danger")
+                has_error = True
+            else:
+                query += " LIMIT %(limit)s"
+                args["limit"] = limit
+    
+    except ValueError:
+        flash("Limit must be a number", "danger")
+        has_error = True
+
+    try:
+        result = DB.selectAll(query, args)
         if result.status and result.rows:
             rows = result.rows
     except Exception as e:
@@ -122,6 +198,7 @@ def delete():
     return redirect(url_for("tracks.list", **args))
 
 @tracks.route("/view", methods=["GET"])
+
 def view():
     id = request.args.get("id")
     if id is None:
@@ -129,10 +206,11 @@ def view():
         return redirect(url_for("stocks.list"))
     try:
         result = DB.selectOne(
-            "SELECT  track_id, readable, title, title_short, track_link, duration, track_rank, artist_name, album_name FROM IS601_Tracks WHERE id = %s",
+            "SELECT  id as 'ID', track_id as 'Track ID', readable as 'Readable', title as 'Name', title_short as 'Short Name', track_link as 'Track Link' , duration as 'Duration', track_rank as 'Ranking' , artist_name as 'Artist', album_name as 'Album' FROM IS601_Tracks WHERE id = %s",
             id
         )
         if result.status and result.row:
+            print(result.row)
             return render_template("track_view.html", track=result.row)
         else:
             flash("Track record not found", "danger")
