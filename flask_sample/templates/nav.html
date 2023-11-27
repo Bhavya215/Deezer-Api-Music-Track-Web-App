@@ -38,11 +38,18 @@
                 ] %}
                 {{dropdown_nav("Roles", roles)}}
                 {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{url_for('auth.logout')}}">Logout</a>
-                </li>
-                {% endif %}
 
+                {% set tracks = [
+                ("tracks.fetch", "Fetch"),
+                ("tracks.add", "Add"),
+                ("tracks.list", "List"),
+                ] %}
+                {{dropdown_nav("Tracks", tracks)}}
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                        href="{{url_for('auth.logout')}}">Logout</a>
+                </li>
             </ul>
         </div>
     </div>

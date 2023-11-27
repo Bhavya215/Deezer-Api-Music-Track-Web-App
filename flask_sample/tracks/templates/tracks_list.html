@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% block title %}Tracks{% endblock %}
+
+<!-- content -->
+{% block content %}
+{% from "_table_helper.html" import render_table %}
+{% set view = "tracks.view" %}
+{% set edit = "tracks.edit" %}
+{% set delete = "tracks.delete" %}
+<div class="container-fluid">
+    <div class="h1 text-center">Tracks</div>
+    <table class="table">
+    {% if rows and rows|length > 0 %}
+    <thead>
+        <tr class="text-capitalize">
+            {# generate th tags for each column to display #}
+            {# don't show any id or organization_id columns #}
+            {# IMPORTANT use table column names as the headings, replace _ with space via filter #}
+            <!-- add th elements -->
+            {% for r in rows[0] %}
+                {% if r == 'track_link' %}
+                    <th>Track Link</th>
+                {% elif r not in ['ID', 'modified', 'created'] %}
+                    <th>{{ r }}</th>
+                {% endif %}
+            {% endfor %}
+            <!-- keep this -->
+            <th>Actions</th>
+        </tr>
+    </thead>
+    
+    <tbody>
+        {# generate tr with td tags for each piece of data #}
+        {# don't show any id or organization_id columns #}
+        {# in the last column add the following
+        an edit button that passes the donation id to donation edit
+        a delete button that passes the donation id and the request args to the donation delete route
+        #}
+        {% for r in rows %}
+        <tr>
+                {% for key, value in r.items() %}
+                    {% if key not in ['ID', 'modified', 'created'] %}
+                        {% if key == 'Track Link' %}
+                            <td><a href="{{ value }}" target="_blank">{{ value }}</a></td>
+                        {% else %}
+                            <td>{{ value }}</td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <td>
+                    <a href="{{ url_for(view, id=r.id) }}">View</a>
+                    <a href="{{ url_for(edit, id=r.id) }}">Edit</a>
+                    <a href="{{ url_for(delete, id=r.id, **request.args) }}">Delete</a>
+                </td>
+        </tr>
+
+        <!-- iterate over rows and generate proper tr and td elements with the data -->
+
+    </tbody>
+    {% endfor %}
+    {% else %}
+    <tbody>
+        <tr>
+            <td colspan="100%">No results to show</td>
+        </tr>
+    </tbody>
+    {% endif %}
+</table> 
+</div>
+
+{% endblock %}
