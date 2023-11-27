@@ -1,5 +1,5 @@
 {% from "_dropdown_nav.html" import dropdown_nav %}
-<nav class="navbar navbar-expand-lg bg-light">
+<nav class="navbar navbar-expand-lg bg-grey">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">Sample</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -29,6 +29,8 @@
                 ("sample.list", "List"),
                 ] %}
                 {{dropdown_nav("Samples", samples)}}
+
+
                 <!-- roles nav (requires admin )-->
                 {% if current_user.has_role("Admin") %}
                 {% set roles = [
@@ -38,11 +40,24 @@
                 ] %}
                 {{dropdown_nav("Roles", roles)}}
                 {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{url_for('auth.logout')}}">Logout</a>
-                </li>
-                {% endif %}
 
+                {% set tracks = [
+                    ("tracks.list", "List"),
+                ] %}
+                {{dropdown_nav("Tracks", tracks)}}
+
+                {% if current_user.has_role("Admin") %}
+                {% set tracks = [
+                ("tracks.fetch", "Fetch"),
+                ("tracks.add", "Add"),
+                ] %}
+                {{dropdown_nav("Tracks Data", tracks)}}
+                {% endif %}
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                        href="{{url_for('auth.logout')}}">Logout</a>
+                </li>
             </ul>
         </div>
     </div>
