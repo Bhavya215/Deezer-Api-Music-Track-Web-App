@@ -5,6 +5,8 @@ from roles.permissions import admin_permission
 
 tracks = Blueprint('tracks', __name__, url_prefix='/tracks', template_folder='templates')
 
+#Bhavya Shah - bs635
+#26 November, 2023
 @tracks.route("/fetch", methods=["GET", "POST"])
 @admin_permission.require(http_exception=403)
 def fetch():
@@ -53,6 +55,8 @@ def fetch():
             flash(f"Error loading Track record: {e}", "danger")
     return render_template("track_search.html", form=form)
 
+#Bhavya Shah - bs635
+#26 November, 2023
 @tracks.route("/add", methods=["GET", "POST"])
 @admin_permission.require(http_exception=403)
 def add():
@@ -60,7 +64,7 @@ def add():
     if form.validate_on_submit():
         print(form.data)
         try:
-            # Create a new stock record in the database
+            # Create a new track record in the database
             result = DB.insertOne(
                 "INSERT INTO IS601_Tracks (track_id, readable, title, title_short, track_link, duration, track_rank, artist_name, album_name) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 form.track_id.data, form.readable.data, form.title.data, form.title_short.data, form.track_link.data, form.duration.data, form.track_rank.data, form.artist_name.data, form.album_name.data
@@ -78,7 +82,7 @@ def edit():
     id = request.args.get("id")
     if id is None:
         flash("Missing ID", "danger")
-        return redirect(url_for("stocks.list"))
+        return redirect(url_for("tracks.list"))
     if form.validate_on_submit() and id:
         try:
             # Update the existing stock record in the database
