@@ -1,9 +1,38 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
-<div class=flashes>
+<div id="flash-messages" class=flashes>
     {% for category, message in messages %}
-    <div class="alert alert-{{ category or 'info' }}" role="alert">{{ message }}</div>
+    <div class="alert alert-{{ category or 'info' }}" role="alert" data-flash-id="{{ loop.index }}">{{ message }}</div>
     {% endfor %}
 </div>
 {% endif %}
 {% endwith %}
+
+<!-- Add this script to the end of your HTML body or in a separate JavaScript file -->
+<script>
+    // Function to hide flash messages after a delay
+    function hideFlashMessages() {
+      var flashMessages = document.getElementById('flash-messages');
+      if (flashMessages) {
+        // Get all flash messages with a data-flash-id attribute
+        var messages = flashMessages.querySelectorAll('[data-flash-id]');
+  
+        // Set a timeout to hide each message after 3 seconds
+        messages.forEach(function (message) {
+          var flashId = message.getAttribute('data-flash-id');
+          setTimeout(function () {
+            var messageToRemove = document.querySelector('[data-flash-id="' + flashId + '"]');
+            if (messageToRemove) {
+              messageToRemove.remove(); // or use display: none; if you want to keep the element in the DOM
+            }
+          }, 2000); // Adjust the delay (in milliseconds) as needed
+        });
+      }
+    }
+  
+    // Call the function when the page loads
+    document.addEventListener('DOMContentLoaded', function () {
+      hideFlashMessages();
+    });
+  </script>
+  

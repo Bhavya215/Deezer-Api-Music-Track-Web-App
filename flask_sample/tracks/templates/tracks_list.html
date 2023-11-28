@@ -1,0 +1,131 @@
+{% extends "layout.html" %}
+{% block title %}Tracks{% endblock %}
+
+<!-- content -->
+{% block content %}
+{% from "_table_helper.html" import render_table %}
+{% from "sort_filter.html" import sort_filter %}
+{% set view = "tracks.view" %}
+{% set edit = "tracks.edit" %}
+{% set delete = "tracks.delete" %}
+<div class="container-fluid">
+    <div class="h1 text-center">Tracks</div>
+
+    <form method="GET">
+        <div class="row">
+            <!-- Search -->
+            <div class="col-md-2">
+                <label class="form-label visually-hidden" for="search">Search Name</label>
+                <input type="text" name="search" class="form-control" id="search" placeholder="Search by Track Name, Artist, Album"
+                    value="{{ request.args.get('Name') or request.args.get('Artist') or request.args.get('Album') or '' }}">
+            </div>
+            <!-- Track Name -->
+            <div class="col">
+                <label class="form-label visually-hidden" for="title">Track Name</label>
+                <input type="text" name="title" class="form-control" id="title" placeholder="Track Name"
+                    value="{{ request.args.get('Name') or '' }}">
+            </div>
+            <!-- Track Short Name -->
+            <div class="col">
+                <label class="form-label visually-hidden" for="track_short_name">Short Name</label>
+                <input type="text" name="track_short_name" class="form-control" id="track_short_name" placeholder="Short Name"
+                    value="{{ request.args.get('track_short_name') or '' }}">
+            </div>
+
+            <div class="col">
+                <label class="form-label visually-hidden" for="duration">Duration</label>
+                <input class="form-control" type="number" min="1" id="duration" name="duration"
+                    placeholder="Duration" value="{{ request.args.get('duration') or '' }}" />
+            </div>
+            <!-- Artist -->
+            <div class="col">
+                <label class="form-label visually-hidden" for="artist">Artist</label>
+                <input type="text" name="artist" class="form-control" id="artist" placeholder="Artist"
+                    value="{{ request.args.get('artist') or '' }}">
+            </div>
+    
+            <!-- Sort Filter -->
+            {{ sort_filter(cols=[
+                ("title", "Track Name"),
+                ("title_short", "Short Name"),
+                ("duration", "Duration"),
+                ("rank", "Rank"),
+                ("artist_name", "Artist"),
+                ("album_name", "Album"),
+                ("created", "Created"),
+                ("modified", "Modified")
+            ]) }}
+            <!-- Limit Filter -->
+            <div class="col">
+                <label class="form-label visually-hidden" for="limit">Limit</label>
+                <input class="form-control" type="number" min="1" max="100" id="limit" name="limit"
+                    value="{{ request.args.get('limit') or '10' }}" />
+            </div>
+            <!-- Filter and Reset Buttons -->
+            <div class="col">
+                <input type="submit" class="btn btn-primary" value="Filter" />
+                <a href="?" class="btn btn-secondary">Reset</a>
+            </div>
+        </div>
+    </form>
+
+    <table class="table">
+    {% if rows and rows|length > 0 %}
+    <thead>
+        <tr class="text-capitalize">
+            {# generate th tags for each column to display #}
+            {# don't show any id or organization_id columns #}
+            {# IMPORTANT use table column names as the headings, replace _ with space via filter #}
+            <!-- add th elements -->
+            {% for r in rows[0] %}
+                {% if r == 'track_link' %}
+                    <th>Track Link</th>
+                {% elif r not in ['ID', 'readable' ,'modified', 'created'] %}
+                    <th>{{ r }}</th>
+                {% endif %}
+            {% endfor %}
+            <!-- keep this -->
+            <th>Actions</th>
+        </tr>
+    </thead>
+    
+    <tbody>
+        {# generate tr with td tags for each piece of data #}
+        {# don't show any id or organization_id columns #}
+        {# in the last column add the following
+        an edit button that passes the donation id to donation edit
+        a delete button that passes the donation id and the request args to the donation delete route
+        #}
+        {% for r in rows %}
+        <tr>
+                {% for key, value in r.items() %}
+                    {% if key not in ['ID', 'readable', 'modified', 'created'] %}
+                        {% if key == 'Track Link' %}
+                            <td><a href="{{ value }}" target="_blank">{{ value }}</a></td>
+                        {% else %}
+                            <td>{{ value }}</td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <td>
+                    <a href="{{ url_for(view, id=r.ID) }}">View</a>
+                    <a href="{{ url_for(edit, id=r.ID) }}">Edit</a>
+                    <a href="{{ url_for(delete, id=r.ID, **request.args) }}">Delete</a>
+                </td>
+        </tr>
+
+        <!-- iterate over rows and generate proper tr and td elements with the data -->
+
+    </tbody>
+    {% endfor %}
+    {% else %}
+    <tbody>
+        <tr>
+            <td colspan="100%">No results to show</td>
+        </tr>
+    </tbody>
+    {% endif %}
+</table> 
+</div>
+
+{% endblock %}
