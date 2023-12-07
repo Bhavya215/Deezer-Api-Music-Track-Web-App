@@ -18,3 +18,4 @@ class TrackForm(FlaskForm):
 
 class PlaylistForm(FlaskForm):
     name = StringField('Playlist Name', [validators.Length(min=1, max=100)])
+    picture = StringField('Playlist Picture Link', [validators.Length(min=0)])

@@ -233,8 +233,8 @@ def add_playlist():
         try:
             # Create a new track record in the database
             result = DB.insertOne(
-                "INSERT INTO IS601_Playlists (name) VALUES (%s)",
-                form.name.data
+                "INSERT INTO IS601_Playlists (name, picture) VALUES (%s, %s)",
+                form.name.data, form.picture.data
             )
             if result.status:
                 flash(f"Created Playlist for {form.name.data}", "success")
@@ -264,7 +264,7 @@ def list_playlist():
     has_error = False
 
     query = """
-    SELECT p.name as 'Name', p.id as 'ID'
+    SELECT p.name as 'Name', p.id as 'ID', p.picture as 'Picture'  -- Add 'picture' to the select statement
     FROM IS601_Playlists p
     JOIN IS601_UserPlaylists up ON p.id = up.playlist_id
     WHERE up.user_id = %(user_id)s
@@ -291,12 +291,11 @@ def list_playlist():
         result = DB.selectAll(query, args)
         if result.status and result.rows:
             rows = result.rows
-            #print(rows)
     except Exception as e:
         print(e)
         flash("Error getting playlist records", "danger")
-    #print("Print list playlist", track_id)
-    return render_template("playlist_list.html", rows=rows, track_id=track_id)
+
+    return render_template("playlist_list.html", rows=rows, track_id=track_id, username = current_user.username)
 
 
 @tracks.route("/add_to_playlist", methods=["GET"])
