@@ -15,3 +15,6 @@ class TrackForm(FlaskForm):
     artist_name = StringField('Artist Name', [validators.Length(min=0, max=80)])
     album_name = StringField('Album Name', [validators.Length(min=0, max=50)])
     #submit = SubmitField("Save")
+
+class PlaylistForm(FlaskForm):
+    name = StringField('Playlist Name', [validators.Length(min=1, max=100)])

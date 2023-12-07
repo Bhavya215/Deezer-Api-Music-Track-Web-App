@@ -46,6 +46,12 @@
                 ] %}
                 {{dropdown_nav("Tracks", tracks)}}
 
+                {% set tracks = [
+                    ("tracks.list_playlist", "List Playlist"),
+                ] %}
+                {{dropdown_nav("Playlists", tracks)}}
+                
+
                 {% if current_user.has_role("Admin") %}
                 {% set tracks = [
                 ("tracks.fetch", "Fetch"),

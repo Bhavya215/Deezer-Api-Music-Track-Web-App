@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% block title %}Playlists{% endblock %}
+
+<!-- content -->
+{% block content %}
+{% from "_table_helper.html" import render_table %}
+{% from "sort_filter.html" import sort_filter %}
+{% set view = "tracks.view_playlist" %}
+{% set edit = "tracks.edit_playlist" %}
+{% set delete = "tracks.delete_playlist" %}
+<div class="container-fluid">
+    <div class="h1 text-center">Playlists</div>
+
+    <form method="GET">
+        <div class="row">
+            <!-- Search -->
+            <div class="col-md-2">
+                <label class="form-label visually-hidden" for="search">Search Playlist Name</label>
+                <input type="text" name="search" class="form-control" id="search" placeholder="Search by Playlist Name"
+                    value="{{ request.args.get('Name') or '' }}">
+            </div>
+
+            <div class="text-end mb-3">
+                <a href="{{ url_for('tracks.add_playlist') }}" class="btn btn-primary">Create Playlist</a>
+            </div>
+
+            <!-- Sort Filter -->
+            {{ sort_filter(cols=[
+                ("name", "Playlist Name"),
+                ("created", "Created"),
+                ("modified", "Modified")
+            ]) }}
+
+            <!-- Limit Filter -->
+            <div class="col">
+                <label class="form-label visually-hidden" for="limit">Limit</label>
+                <input class="form-control" type="number" min="1" max="100" id="limit" name="limit"
+                    value="{{ request.args.get('limit') or '10' }}" />
+            </div>
+
+            <!-- Filter and Reset Buttons -->
+            <div class="col">
+                <input type="submit" class="btn btn-primary" value="Filter" />
+                <a href="?" class="btn btn-secondary">Reset</a>
+            </div>
+        </div>
+    </form>
+
+    <table class="table">
+    {% if rows and rows|length > 0 %}
+    <thead>
+        <tr class="text-capitalize">
+            <!-- generate th tags for each column to display -->
+            {% for r in rows[0] %}
+                {% if r not in ['ID', 'modified', 'created'] %}
+                    <th>{{ r }}</th>
+                {% endif %}
+            {% endfor %}
+            <!-- keep this -->
+            <th>Actions</th>
+        </tr>
+    </thead>
+    
+    <tbody>
+        <!-- generate tr with td tags for each piece of data -->
+        {% for r in rows %}
+        <tr>
+            {% for key, value in r.items() %}
+                {% if key not in ['ID', 'modified', 'created'] %}
+                    <td>{{ value }}</td>
+                {% endif %}
+            {% endfor %}
+            <td>
+                <a href="{{ url_for(view, id=r.ID) }}">View</a>
+                <a href="{{ url_for(edit, id=r.ID) }}">Edit</a>
+                <a href="{{ url_for(delete, playlist_id=r['ID']) }}"
+                    class="btn btn-danger"
+                    onclick="return confirm('Are you sure you want to delete this playlist? This will remove all tracks from the playlist.')">
+                    Delete Playlist
+                </a>
+
+                <!-- Add button for adding to playlist -->
+                <a href="{{ url_for('tracks.add_to_playlist', track_id=track_id, playlist_id=r['ID']) }}" class="btn btn-success">Add</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    {% else %}
+    <tbody>
+        <tr>
+            <td colspan="100%">No results to show</td>
+        </tr>
+    </tbody>
+    {% endif %}
+</table> 
+</div>
+
+{% endblock %}

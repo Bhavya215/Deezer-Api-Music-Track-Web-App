@@ -8,6 +8,7 @@
 {% set view = "tracks.view" %}
 {% set edit = "tracks.edit" %}
 {% set delete = "tracks.delete" %}
+{% set list_playlist = "tracks.list_playlist" %}
 <div class="container-fluid">
     <div class="h1 text-center">Tracks</div>
 
@@ -109,8 +110,11 @@
                 {% endfor %}
                 <td>
                     <a href="{{ url_for(view, id=r.ID) }}">View</a>
-                    <a href="{{ url_for(edit, id=r.ID) }}">Edit</a>
-                    <a href="{{ url_for(delete, id=r.ID, **request.args) }}">Delete</a>
+                    <a href="{{ url_for(list_playlist, id=r.ID) }}">Add to Playlist</a>
+                    {% if current_user.has_role("Admin") %}
+                        <a href="{{ url_for(edit, id=r.ID) }}">Edit</a>
+                        <a href="{{ url_for(delete, id=r.ID, **request.args) }}">Delete</a>
+                    {% endif %}
                 </td>
         </tr>
 
