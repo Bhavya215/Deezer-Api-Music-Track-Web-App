@@ -1,10 +1,13 @@
 {% from "_dropdown_nav.html" import dropdown_nav %}
 <nav class="navbar navbar-expand-lg bg-grey">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">Sample</a>
+        <a class="navbar-brand" href="{{ url_for('auth.landing_page') }}">
+            <img src="https://store-images.s-microsoft.com/image/apps.51017.13510798886741797.40e62e3b-6f16-46fa-9323-15ebc223229d.5f19fe95-4a73-40cc-ba39-9f7c21f932bb" alt="Deezer Logo" width="30" height="30">
+            Deezer
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-            aria-expanded="false" aria-label="Toggle navigation">
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -17,9 +20,7 @@
                     <a class="nav-link" href="{{url_for('auth.register')}}">Register</a>
                 </li>
                 {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{url_for('auth.landing_page')}}">Home</a>
-                </li>
+                
                 <li class="nav-item">
                     <a class="nav-link" href="{{url_for('auth.profile')}}">Profile</a>
                 </li>
@@ -50,6 +51,14 @@
                     ("tracks.list_playlist", "List Playlist"),
                 ] %}
                 {{dropdown_nav("Playlists", tracks)}}
+
+                {% if current_user.has_role("Admin") %}
+                    {% set admin_menu = [
+                        ("tracks.list_users", "List Users"),
+                    ] %}
+                    {{ dropdown_nav("Admin", admin_menu) }}
+                {% endif %}
+
                 
 
                 {% if current_user.has_role("Admin") %}

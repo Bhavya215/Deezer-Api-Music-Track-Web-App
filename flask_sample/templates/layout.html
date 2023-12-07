@@ -1,36 +1,37 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
     {% block head %}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
-        crossorigin="anonymous"></script>
-    <style>
-        body {
-            background-color: rgb(229, 209, 239);
-            font-family: 'Arial', sans-serif; /* Change the font-family as needed */
-        }
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+            integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+            crossorigin="anonymous"></script>
+        <link rel="icon" href="https://t3.ftcdn.net/jpg/04/54/66/12/240_F_454661277_NtQYM8oJq2wOzY1X9Y81FlFa06DVipVD.jpg" type="image/x-icon">
+        <style>
+            body {
+                background-color: rgb(229, 209, 239);
+                font-family: 'Arial', sans-serif; /* Change the font-family as needed */
+            }
 
-        .footer {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 60px;
-            line-height: 60px;
-            background-color: rgb(146, 220, 247); 
-        }
+            .footer {
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                height: 60px;
+                line-height: 60px;
+                background-color: rgb(146, 220, 247);
+            }
 
-        .header {
-            top: 0;
-            height: 60px;
-            line-height: 60px;
-            background-color: rgb(146, 220, 247);
-        }
-    </style>
-    <title>{% block title %}{% endblock %} - Sample</title>
+            .header {
+                top: 0;
+                height: 60px;
+                line-height: 60px;
+                background-color: rgb(146, 220, 247);
+            }
+        </style>
+        <title>{% block title %}Music{% endblock %}</title>
     {% endblock %}
 </head>
 
@@ -44,10 +45,10 @@
             }
         </style>
     </div>
-    <div id="content" class="overflow-auto" style="height: 84vh" >{% block content %}{% endblock %}</div>
+    <div id="content" class="overflow-auto" style="height: 84vh">{% block content %}{% endblock %}</div>
     <div id="footer" class="footer text-center fixed-bottom">
         {% block footer %}
-        &copy; Copyright 2023.
+            &copy; Copyright 2023.
         {% endblock %}
     </div>
 </body>

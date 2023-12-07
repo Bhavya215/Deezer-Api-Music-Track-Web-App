@@ -264,7 +264,7 @@ def list_playlist():
     has_error = False
 
     query = """
-    SELECT p.name as 'Name', p.id as 'ID', p.picture as 'Picture'  -- Add 'picture' to the select statement
+    SELECT p.name as 'Name', p.id as 'ID', p.picture as 'Picture' 
     FROM IS601_Playlists p
     JOIN IS601_UserPlaylists up ON p.id = up.playlist_id
     WHERE up.user_id = %(user_id)s
@@ -385,9 +385,9 @@ def edit_playlist():
         return redirect(url_for("tracks.list_playlist"))
 
     try:
-        # Fetch current playlist name
+        # Fetch current playlist name and picture
         playlist_result = DB.selectOne(
-            "SELECT name FROM IS601_Playlists WHERE id = %s",
+            "SELECT name, picture FROM IS601_Playlists WHERE id = %s",
             playlist_id
         )
 
@@ -396,25 +396,27 @@ def edit_playlist():
             return redirect(url_for("tracks.list_playlist"))
 
         playlist_name = playlist_result.row["name"]
+        playlist_picture = playlist_result.row["picture"]
 
         if form.validate_on_submit():
-            # Update playlist name in the database
+            # Update playlist name and picture link in the database
             try:
                 result = DB.insertOne(
-                    "UPDATE IS601_Playlists SET name = %s WHERE id = %s",
-                    form.name.data, playlist_id
+                    "UPDATE IS601_Playlists SET name = %s, picture = %s WHERE id = %s",
+                    form.name.data, form.picture.data, playlist_id
                 )
 
                 if result.status:
-                    flash(f"Updated playlist name to {form.name.data}", "success")
+                    flash(f"Updated playlist information", "success")
                     return redirect(url_for("tracks.list_playlist"))
                 else:
-                    flash("Failed to update playlist name", "danger")
+                    flash("Failed to update playlist information", "danger")
             except Exception as e:
-                flash(f"Error updating playlist name: {e}", "danger")
+                flash(f"Error updating playlist information: {e}", "danger")
 
-        # Pre-fill the form with the current playlist name
+        # Pre-fill the form with the current playlist information
         form.name.data = playlist_name
+        form.picture.data = playlist_picture
 
     except Exception as e:
         flash(f"Error fetching playlist information: {e}", "danger")
@@ -506,4 +508,95 @@ def delete_playlist():
 
     return redirect(url_for("tracks.list_playlist", **args))
 
+@tracks.route("/list_users", methods=["GET"])
+@admin_permission.require(http_exception=403)
+def list_users():
+    try:
+        # Fetch a list of users from your database
+        users_result = DB.selectAll(
+            "SELECT id, username, email FROM IS601_Users"
+        )
 
+        if users_result.status and users_result.rows:
+            users = users_result.rows
+            return render_template("list_users.html", users=users)
+        else:
+            flash("No users found", "warning")
+
+    except Exception as e:
+        flash(f"Error fetching user list: {e}", "danger")
+
+    return redirect(url_for("tracks.list"))
+
+@tracks.route("/view_user", methods=["GET"])
+@admin_permission.require(http_exception=403)
+def view_user():
+    user_id = request.args.get("user_id")
+
+    if user_id is None:
+        flash("Missing user ID", "danger")
+        return redirect(url_for("tracks.list_users"))
+
+    try:
+        # Fetch user details from your database
+        user_result = DB.selectOne(
+            "SELECT id, username, email FROM IS601_Users WHERE id = %s",
+            user_id
+        )
+
+        if user_result.status and user_result.row:
+            user = user_result.row
+            return render_template("view_user.html", user=user)
+        else:
+            flash("User not found", "danger")
+
+    except Exception as e:
+        flash(f"Error fetching user details: {e}", "danger")
+
+    return redirect(url_for("tracks.list_users"))
+
+
+@tracks.route("/user_playlists", methods=["GET"])
+@admin_permission.require(http_exception=403)
+def user_playlists():
+    user_id = request.args.get("user_id")
+
+    if user_id is None:
+        flash("Missing user ID", "danger")
+        return redirect(url_for("tracks.list_users"))
+
+    try:
+        # Fetch user details from your database
+        user_result = DB.selectOne(
+            "SELECT id, username, email FROM IS601_Users WHERE id = %s",
+            user_id
+        )
+
+        if not user_result.status or not user_result.row:
+            flash("User not found", "danger")
+            return redirect(url_for("tracks.list_users"))
+
+        user = user_result.row
+
+        # Fetch playlists associated with the user
+        playlists_result = DB.selectAll(
+            """
+            SELECT p.name as 'Name', p.id as 'ID', p.picture as 'Picture' 
+            FROM IS601_Playlists p
+            JOIN IS601_UserPlaylists up ON p.id = up.playlist_id
+            WHERE up.user_id = %s
+            """,
+            user_id
+        )
+
+        if playlists_result.status:
+            playlists = playlists_result.rows
+        else:
+            playlists = []
+
+        return render_template("user_playlists.html", user=user, playlists=playlists)
+
+    except Exception as e:
+        flash(f"Error fetching user playlists: {e}", "danger")
+
+    return redirect(url_for("tracks.list_users"))
