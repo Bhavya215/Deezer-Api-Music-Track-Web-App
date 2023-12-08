@@ -1,7 +1,7 @@
 from flask import Blueprint, flash, render_template, request, redirect, url_for
 from sql.db import DB  # Import your DB class
 from tracks.forms import TrackForm, TrackSearchForm, PlaylistForm  # Import your StockForm class
-from roles.permissions import admin_permission
+from roles.permissions import admin_permission, user_permission, manager_permission
 from flask_login import login_user, login_required, logout_user, current_user
 
 tracks = Blueprint('tracks', __name__, url_prefix='/tracks', template_folder='templates')
@@ -77,7 +77,7 @@ def add():
     return render_template("track_form.html", form=form, type="Create")
 
 @tracks.route("/edit", methods=["GET", "POST"])
-@admin_permission.require(http_exception=403)
+@manager_permission.require(http_exception=403)
 def edit():
     form = TrackForm()
     id = request.args.get("id")
@@ -225,6 +225,7 @@ def view():
     return redirect(url_for("tracks.list"))
 
 @tracks.route("/add_playlist", methods=["GET", "POST"])
+@user_permission.require(http_exception=403)
 @login_required
 def add_playlist():
     form = PlaylistForm()
@@ -257,6 +258,7 @@ def add_playlist():
     return render_template("playlist_form.html", form=form, type="Create")
 
 @tracks.route("/list_playlist", methods=["GET", "POST"])
+@user_permission.require(http_exception=403)
 @login_required
 def list_playlist():
     rows = []
@@ -299,6 +301,7 @@ def list_playlist():
 
 
 @tracks.route("/add_to_playlist", methods=["GET"])
+@user_permission.require(http_exception=403)
 @login_required
 def add_to_playlist():
     track_id = request.args.get("track_id")
@@ -375,6 +378,7 @@ def view_playlist():
         return redirect(url_for("tracks.list_playlist"))
     
 @tracks.route("/edit_playlist", methods=["GET", "POST"])
+@user_permission.require(http_exception=403)
 @login_required
 def edit_playlist():
     playlist_id = request.args.get("id")
@@ -453,6 +457,7 @@ def remove_from_playlist():
     return redirect(url_for("tracks.list_playlist"))
 
 @tracks.route("/delete_playlist", methods=["GET", "POST"])
+@user_permission.require(http_exception=403)
 @login_required
 def delete_playlist():
     playlist_id = request.args.get("playlist_id")
