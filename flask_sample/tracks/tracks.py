@@ -761,3 +761,34 @@ def list_tracks_in_user_playlists():
 
     return render_template("list_tracks_in_user_playlists.html", rows=tracks)
 
+
+@tracks.route("/admin_add_to_playlist", methods=["GET"])
+@admin_permission.require(http_exception=403)
+@login_required
+def admin_add_to_playlist():
+    track_id = request.args.get("track_id")
+    playlist_id = request.args.get("playlist_id")
+    user_id = request.args.get("user_id")
+    print("Playlist ID:", playlist_id)
+    if not track_id:
+        flash("Add a song", "info")
+        return redirect(url_for("tracks.list", user_id=user_id, playlist_id=playlist_id))
+
+    try:
+        # Insert the record into the IS601_PlaylistTracks table
+        result = DB.insertOne(
+            "INSERT INTO IS601_PlaylistTracks (playlist_id, track_id, tracks) VALUES (%s, %s, 1) ON DUPLICATE KEY UPDATE tracks = tracks + 1",
+            playlist_id, track_id
+        )
+
+        if result.status:
+            flash("Added track to playlist", "success")
+        else:
+            flash("Failed to add track to playlist", "danger")
+
+
+    except Exception as e:
+        flash(f"Error adding track to playlist: {e}", "danger")
+
+    return redirect(url_for("tracks.user_playlists", user_id=user_id))
+

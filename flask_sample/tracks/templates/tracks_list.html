@@ -9,6 +9,7 @@
 {% set edit = "tracks.edit" %}
 {% set delete = "tracks.delete" %}
 {% set list_playlist = "tracks.list_playlist" %}
+{% set admin_add = "tracks.admin_add_to_playlist" %}
 <div class="container-fluid">
     <div class="h1 text-center">Tracks</div>
 
@@ -111,7 +112,11 @@
                 {% endfor %}
                 <td>
                     <a href="{{ url_for(view, id=r.ID) }}">View</a>
+                    {% if current_user.has_role("Admin") %}
+                    <a href="{{ url_for(admin_add, track_id=r.ID, playlist_id = request.args.get('playlist_id'), user_id = request.args.get('user_id') ) }}">Add to Playlist</a>
+                    {% else %}
                     <a href="{{ url_for(list_playlist, id=r.ID) }}">Add to Playlist</a>
+                    {% endif %}
                     {% if current_user.has_role("Manager") %}
                         <a href="{{ url_for(edit, id=r.ID) }}">Edit</a>
                     {% endif %}
