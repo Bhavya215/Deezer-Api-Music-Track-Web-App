@@ -55,8 +55,9 @@
                 {% if current_user.has_role("Admin") %}
                     {% set admin_menu = [
                         ("tracks.list_users", "List Users"),
+                        ("tracks.list_tracks_in_user_playlists", "User Tracks")
                     ] %}
-                    {{ dropdown_nav("Admin", admin_menu) }}
+                    {{ dropdown_nav("Users", admin_menu) }}
                 {% endif %}
 
                 

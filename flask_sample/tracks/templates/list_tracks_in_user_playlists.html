@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% block title %}Tracks in User Playlists{% endblock %}
+
+{% from "_table_helper.html" import render_table %}
+{% from "sort_filter.html" import sort_filter %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h2 class="mb-4">Tracks in User Playlists</h2>
+
+        <form method="GET" class="mb-3">
+            <div class="row align-items-center">
+                <div class="col-md-3 mb-2">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Search Track Name"
+                            value="{{ request.args.get('Name') or '' }}">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+                <!-- UsersCount Filter -->
+                <div class="col-md-1 mb-2">
+                    <input class="form-control" type="number" name="user_count"
+                        value="{{ request.args.get('user_count') or '' }}" placeholder="UsersCount" />
+                </div>
+
+                <!-- Sort Filter -->
+                {{ sort_filter(cols=[
+                    ("Name", "Track Name"),
+                    ("Duration", "Duration"),
+                    ("Artist", "Artist"),
+                    ("Album", "Album"),
+                    ("Ranking", "Ranking"),
+                    ("UsersCount", "Users Count")
+                ]) }}
+
+                <!-- Limit Filter -->
+                <div class="col-md-2 mb-2">
+                    <input class="form-control" type="number" min="1" max="100" name="limit"
+                        value="{{ request.args.get('limit') or '10' }}" placeholder="Limit" />
+                </div>
+
+                <!-- Filter and Reset Buttons -->
+                <div class="col-md-2 mb-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="?" class="btn btn-secondary">Reset</a>
+                    <a href="{{ url_for('tracks.list') }}" class="btn btn-dark">All Tracks</a>
+                </div>
+            </div>
+        </form>
+
+        <p>Total Tracks: {{ rows|length }}</p>
+
+        <div class="row">
+            {% for track in rows %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ track.Name }}</h5>
+                            <p class="card-text"><strong>Duration:</strong> {{ track.Duration }}</p>
+                            <p class="card-text"><strong>Artist:</strong> {{ track.Artist }}</p>
+                            <p class="card-text"><strong>Album:</strong> {{ track.Album }}</p>
+                            <p class="card-text"><strong>Ranking:</strong> {{ track.Ranking }}</p>
+                            <p class="card-text"><strong>Users Count:</strong> {{ track.UsersCount }}</p>
+                            <!-- Add more track details as needed -->
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

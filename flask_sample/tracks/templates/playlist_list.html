@@ -15,8 +15,10 @@
         <div class="row align-items-center">
             <div class="col-md-1 mb-2">
                 <a href="{{ url_for('tracks.add_playlist') }}" class="btn btn-success">Create Playlist</a>
+                <a href="{{ url_for('tracks.clear_user_playlists', user_id=current_user.id) }}" class="btn btn-danger" onclick="return confirm('Are you sure you want to clear all playlists? This will remove all your playlists.')">
+                    Clear Playlists
+                </a>
             </div>
-
             <!-- Search -->
             <div class="col-md-5 mb-2">
                 <div class="input-group">
@@ -48,6 +50,8 @@
 
         </div>
     </form>
+
+    <p>Total Playlists: {{ rows|length }}</p> 
 
     <div class="row">
         {% for r in rows %}

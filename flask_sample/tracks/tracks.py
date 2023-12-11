@@ -114,9 +114,8 @@ def list():
 
     query = "SELECT title as 'Name', title_short as 'Short Name', track_link as 'Track Link', duration as 'Duration', artist_name as 'Artist', album_name as 'Album', track_rank as 'Ranking', id as 'ID', track_id as 'Track ID', readable FROM IS601_Tracks WHERE 1=1"
 
-    args = {}  # <--- add values to replace %s/%(named)s placeholders
+    args = {}
     allowed_columns = ["title", "title_short", "duration", "track_rank", "artist_name", "album_name", "created", "modified"]
-    track_id = request.args.get("id")
     search = request.args.get("search")
     title = request.args.get("title")
     title_short = request.args.get("title_short")
@@ -126,41 +125,36 @@ def list():
     column = request.args.get("column")
     order = request.args.get("order")
     limit = request.args.get("limit", 10)
-    print(search)
+    page = request.args.get("page", 1, type=int)
+
     if search:
-        query += " AND IS601_Tracks.title LIKE %(search)s OR IS601_Tracks.artist_name LIKE %(search)s OR IS601_Tracks.album_name LIKE %(search)s"
+        query += " AND (IS601_Tracks.title LIKE %(search)s OR IS601_Tracks.artist_name LIKE %(search)s OR IS601_Tracks.album_name LIKE %(search)s)"
         args["search"] = f"%{search}%"
 
     if title:
         query += " AND IS601_Tracks.title LIKE %(title)s"
         args["title"] = f"%{title}%"
 
-    
     if title_short:
         query += " AND IS601_Tracks.title_short LIKE %(title_short)s"
         args["title_short"] = f"%{title_short}%"
 
-    
     if duration:
         query += " AND IS601_Tracks.duration LIKE %(duration)s"
         args["duration"] = f"%{duration}%"
 
-    
     if artist_name:
         query += " AND IS601_Tracks.artist_name LIKE %(artist_name)s"
         args["artist_name"] = f"%{artist_name}%"
 
-    
     if album_name:
-        query += " AND al.title LIKE %(album_name)s"
+        query += " AND IS601_Tracks.album_name LIKE %(album_name)s"
         args["album_name"] = f"%{album_name}%"
 
-    
     if column and order:
         if column in allowed_columns and order in ["asc", "desc"]:
             query += f" ORDER BY {column} {order}"
-
-    
+    per_page = 10
     try:
         if limit:
             limit = int(limit)
@@ -168,13 +162,15 @@ def list():
                 flash("Limit must be between 1 and 100", "danger")
                 has_error = True
             else:
-                query += " LIMIT %(limit)s"
+                offset = (page - 1) * per_page
+                query += " LIMIT %(offset)s, %(limit)s"
+                args["offset"] = offset
                 args["limit"] = limit
-    
+
     except ValueError:
         flash("Limit must be a number", "danger")
         has_error = True
-
+    
     try:
         result = DB.selectAll(query, args)
         if result.status and result.rows:
@@ -182,7 +178,21 @@ def list():
     except Exception as e:
         print(e)
         flash("Error getting track records", "danger")
-    return render_template("tracks_list.html", rows=rows)
+
+    print(len(rows))
+    total_rows = len(rows)
+    
+    total_pages = (total_rows + per_page - 1) // per_page
+
+    page = request.args.get("page", 1, type=int)
+
+    # Slice the rows based on the current page
+    start_index = (page - 1) * per_page
+    end_index = start_index + per_page
+    rows_to_display = rows[start_index:end_index]
+
+    return render_template("tracks_list.html", rows=rows_to_display, total_pages=total_pages, current_page=page, total_rows=total_rows)
+
 
 @tracks.route("/delete", methods=["GET"])
 @admin_permission.require(http_exception=403)
@@ -264,7 +274,10 @@ def list_playlist():
     rows = []
     track_id = request.args.get("id")
     has_error = False
-
+    search = request.args.get("search")
+    column = request.args.get("column")
+    order = request.args.get("order")
+    limit = request.args.get("limit", 10)
     query = """
     SELECT p.name as 'Name', p.id as 'ID', p.picture as 'Picture' 
     FROM IS601_Playlists p
@@ -273,8 +286,18 @@ def list_playlist():
 """
 
     args = {"user_id": current_user.id}
-    limit = request.args.get("limit", 10)
 
+    if search:
+        query += " AND name LIKE %(search)s"
+        args["search"] = f"%{search}%"
+
+    allowed_columns = ["name", "created", "modified"]
+    if column and order:
+        if column in allowed_columns and order in ["asc", "desc"]:
+            query += f" ORDER BY p.{column} {order}"
+
+    # Example logic for filtering
+    
     try:
         if limit:
             limit = int(limit)
@@ -454,7 +477,13 @@ def remove_from_playlist():
     except Exception as e:
         flash(f"Error removing track from playlist: {e}", "danger")
 
-    return redirect(url_for("tracks.list_playlist"))
+    # Check if the current user is an admin
+    if admin_permission.can():
+        # Redirect to the admin page
+        return redirect(url_for("tracks.list_users"))
+    else:
+        # Redirect to the user's playlist page
+        return redirect(url_for("tracks.list_playlist"))
 
 @tracks.route("/delete_playlist", methods=["GET", "POST"])
 @user_permission.require(http_exception=403)
@@ -605,3 +634,130 @@ def user_playlists():
         flash(f"Error fetching user playlists: {e}", "danger")
 
     return redirect(url_for("tracks.list_users"))
+
+@tracks.route("/clear_user_associations", methods=["GET", "POST"])
+@user_permission.require(http_exception=403)
+@login_required
+def clear_user_playlists():
+    user_id = request.args.get("user_id")
+    args = {**request.args}
+
+    if not user_id:
+        flash("Invalid request", "danger")
+        return redirect(url_for("tracks.list_playlist"))
+
+    try:
+        # Fetch all playlist IDs for the user
+        user_playlists_result = DB.selectAll(
+            "SELECT playlist_id FROM IS601_UserPlaylists WHERE user_id = %s",
+            user_id
+        )
+
+        if user_playlists_result.status and user_playlists_result.rows:
+            playlist_ids = [playlist['playlist_id'] for playlist in user_playlists_result.rows]
+
+            # Remove all tracks associated with the playlists
+            for playlist_id in playlist_ids:
+                result_remove_tracks = DB.delete(
+                    "DELETE FROM IS601_PlaylistTracks WHERE playlist_id = %s",
+                    playlist_id
+                )
+
+                if not result_remove_tracks.status:
+                    flash(f"Failed to remove tracks from playlist {playlist_id}", "danger")
+
+            # Delete user playlist relations
+            result_remove_user_playlists = DB.delete(
+                "DELETE FROM IS601_UserPlaylists WHERE user_id = %s",
+                user_id
+            )
+
+            if result_remove_user_playlists.status:
+                flash("Cleared all playlists for the user", "success")
+            else:
+                flash("Failed to clear user playlists", "danger")
+
+        else:
+            flash("No playlists found for the user", "danger")
+
+    except Exception as e:
+        flash(f"Error clearing user playlists: {e}", "danger")
+
+    return redirect(url_for("tracks.list_playlist", **args))
+
+
+@tracks.route("/list_tracks_in_user_playlists", methods=["GET"])
+@admin_permission.require(http_exception=403)
+def list_tracks_in_user_playlists():
+    tracks = []
+    has_error = False
+
+    # Your database query to fetch tracks in user playlists
+    query = """
+    SELECT t.id, t.track_id, t.title as Name,t.duration as Duration, t.artist_name as Artist, t.track_rank as Ranking, t.album_name as Album, COUNT(u.id) AS UsersCount
+    FROM IS601_Tracks t
+    LEFT JOIN IS601_PlaylistTracks pt ON t.id = pt.track_id
+    LEFT JOIN IS601_Playlists p ON pt.playlist_id = p.id
+    LEFT JOIN IS601_UserPlaylists up ON p.id = up.playlist_id
+    LEFT JOIN IS601_Users u ON up.user_id = u.id
+    GROUP BY t.id, t.track_id, t.title, t.artist_name, t.album_name
+    """
+
+    args = {}  # Add any additional query parameters here
+    search = request.args.get("search")
+    column = request.args.get("column")
+    order = request.args.get("order")
+    user_count_filter = request.args.get("user_count")
+     # Apply search filter
+    
+    if search:
+        query += " HAVING LOWER(t.title) LIKE LOWER(%(search)s)"
+        args["search"] = f"%{search}%"
+
+    # Apply UserCount filter
+    
+    if user_count_filter is not None and user_count_filter.isdigit():
+        user_count_filter = int(user_count_filter)
+        query += " HAVING UsersCount = %(user_count_filter)s"
+        args["user_count_filter"] = user_count_filter
+    # Apply sortin  # Default sorting order is ascending
+
+    # Ensure the sort column is valid to prevent SQL injection
+    valid_sort_columns = ["Name", "Duration", "Artist", "Album", "Ranking", "UsersCount"]
+    if column not in valid_sort_columns:
+        #flash("Invalid sort column", "danger")
+        has_error = True
+    else:
+        query = f"""
+            SELECT * FROM (
+                {query}
+            ) AS subquery
+            ORDER BY {column} {order}
+        """
+
+    # Apply limit
+    limit = request.args.get("limit", 10)
+    try:
+        limit = int(limit)
+        if not 1 <= limit <= 100:
+            flash("Limit must be between 1 and 100", "danger")
+            has_error = True
+        else:
+            query += " LIMIT %(limit)s"
+            args["limit"] = limit
+
+    except ValueError:
+        flash("Limit must be a number", "danger")
+        has_error = True
+
+    try:
+        result = DB.selectAll(query, args)
+        if result.status and result.rows:
+            tracks = result.rows
+            print(tracks)
+    except Exception as e:
+        print(e)
+        flash("Error getting tracks in user playlists", "danger")
+
+    return render_template("list_tracks_in_user_playlists.html", rows=tracks)
+
