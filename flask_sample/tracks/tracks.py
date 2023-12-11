@@ -267,6 +267,8 @@ def add_playlist():
             flash(f"Error Playlist: {e}", "danger")
     return render_template("playlist_form.html", form=form, type="Create")
 
+#Bhavya Shah
+#7th December, 2023
 @tracks.route("/list_playlist", methods=["GET", "POST"])
 @user_permission.require(http_exception=403)
 @login_required
@@ -353,7 +355,8 @@ def add_to_playlist():
 
     return redirect(url_for("tracks.list_playlist"))
 
-
+#Bhavya Shah
+#7 December 2023
 @tracks.route("/view_playlist", methods=["GET"])
 @login_required
 def view_playlist():
