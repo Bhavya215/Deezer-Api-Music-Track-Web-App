@@ -36,6 +36,11 @@ def register():
             # save the hash, not the plaintext password
             result = DB.insertOne("INSERT INTO IS601_Users (email, username, password) VALUES (%s, %s, %s)", email, username, hash)
             if result.status:
+                last_insert_query = "SELECT LAST_INSERT_ID() AS last_id"
+                last_id_result = DB.selectOne(last_insert_query)
+                if last_id_result.status and last_id_result.row:
+                    user_id = last_id_result.row['last_id']
+                    role_result = DB.insertOne("INSERT INTO IS601_UserRoles (user_id, role_id) VALUES (%s, %s)", user_id, 6)
                 flash("Successfully registered","success")
         except Exception as e:
             check_duplicate(e)

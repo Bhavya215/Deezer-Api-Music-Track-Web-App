@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% block title %}View Playlist{% endblock %}
+
+{% block content %}
+<style>
+    /* Custom styles for the View Playlist page */
+    .custom-card {
+        border: 2px solid #676060; /* Black border for the card */
+        border-radius: 10px; /* Rounded corners */
+        background-color: #f0f0f1; /* Black background */
+        color: #ffffff; /* White text color */
+        box-shadow: 0 4px 8px rgba(77, 77, 77, 0.2); /* Soft black shadow */
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .custom-table th, .custom-table td {
+        border: 1px solid #9988e7; /* Darker purple border for table cells */
+        padding: 10px; /* Add some padding for better spacing */
+        text-align: left;
+        color: #090909; /* Dark gray text color */
+    }
+
+    .custom-table th {
+        background-color: #e3e2ec; /* Light purple background for table header cells */
+    }
+
+    .custom-table td a {
+        color: #007bff; /* Blue color for links */
+    }
+
+    .custom-table td a:hover {
+        text-decoration: underline; /* Underline links on hover */
+    }
+
+    .btn-back {
+        background-color: #4d4d4d; /* Black background for the Back button */
+        color: #ffffff; /* White text color */
+        border: none; /* No border */
+    }
+
+    .btn-back:hover {
+        background-color: #333333; /* Darker black background on hover */
+    }
+
+    .h3 {
+        color: rgb(1, 0, 7); /* Light purple color for headings */
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="h3 mb-4">View Playlist: {{ playlist }}</div>
+
+    <div class="card custom-card">
+        <div class="card-body">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Track Name</th>
+                        <th>Track ID</th>
+                        <th>Readable</th>
+                        <th>Short Name</th>
+                        <th>Track Link</th>
+                        <th>Duration</th>
+                        <th>Ranking</th>
+                        <th>Artist</th>
+                        <th>Album</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for track in tracks %}
+                        <tr>
+                            <td>{{ track['Name'] }}</td>
+                            <td>{{ track['Track ID'] }}</td>
+                            <td>{{ track['Readable'] }}</td>
+                            <td>{{ track['Short Name'] }}</td>
+                            <td><a href="{{ track['Track Link'] }}" target="_blank">{{ track['Track Link'] }}</a></td>
+                            <td>{{ track['Duration'] }}</td>
+                            <td>{{ track['Ranking'] }}</td>
+                            <td>{{ track['Artist'] }}</td>
+                            <td>{{ track['Album'] }}</td>
+                            <td>
+                                <!-- Add a hyperlink to remove the track from the playlist -->
+                                <a href="{{ url_for('tracks.remove_from_playlist', playlist_id=playlist_id, track_id=track['ID']) }}"
+                                   class="btn btn-danger"
+                                   onclick="return confirm('Are you sure you want to remove this track from the playlist?')">Remove</a>
+                              </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="mt-4">
+                <a href="{{ url_for('tracks.list_playlist') }}" class="btn btn-secondary btn-back">Back to Playlist</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

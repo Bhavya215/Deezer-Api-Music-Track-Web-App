@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{% block title %}Playlists{% endblock %}
+
+<!-- content -->
+{% block content %}
+{% from "_table_helper.html" import render_table %}
+{% from "sort_filter.html" import sort_filter %}
+{% set view = "tracks.view_playlist" %}
+{% set edit = "tracks.edit_playlist" %}
+{% set delete = "tracks.delete_playlist" %}
+<div class="container-fluid">
+    <div class="h1 text-center mb-4">{{username.title()}}'s Playlists</div>
+
+    <form method="GET" class="mb-3">
+        <div class="row align-items-center">
+            <div class="col-md-1 mb-2">
+                <a href="{{ url_for('tracks.add_playlist') }}" class="btn btn-success">Create Playlist</a>
+                <a href="{{ url_for('tracks.clear_user_playlists', user_id=current_user.id) }}" class="btn btn-danger" onclick="return confirm('Are you sure you want to clear all playlists? This will remove all your playlists.')">
+                    Clear Playlists
+                </a>
+            </div>
+            <!-- Search -->
+            <div class="col-md-5 mb-2">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Search Playlist Name"
+                        value="{{ request.args.get('Name') or '' }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+
+            <!-- Sort Filter -->
+            {{ sort_filter(cols=[
+                ("name", "Playlist Name"),
+                ("created", "Created"),
+                ("modified", "Modified")
+            ]) }}
+
+            <!-- Limit Filter -->
+            <div class="col-md-2 mb-2">
+                <input class="form-control" type="number" min="1" max="100" name="limit"
+                    value="{{ request.args.get('limit') or '10' }}" placeholder="Limit" />
+            </div>
+
+            <!-- Filter and Reset Buttons -->
+            <div class="col-md-2 mb-2">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="?" class="btn btn-secondary">Reset</a>
+                <a href="{{ url_for('tracks.list') }}" class="btn btn-dark">Tracks</a>
+            </div>
+
+        </div>
+    </form>
+
+    <p>Total Playlists: {{ rows|length }}</p> 
+
+    <div class="row">
+        {% for r in rows %}
+            <div class="col-md-2 mb-2">
+                <div class="card">
+                    <img src="{{ r.Picture }}" class="card-img-top" alt="{{ r.Name }}" height="150">
+                    <div class="card-body text-center">
+                        <h5 class="card-title font-weight-bold" style="font-size: 1.5rem;">{{ r.Name }}</h5>
+                        <p class="card-text">
+                            <a href="{{ url_for(view, id=r.ID) }}" class="btn btn-outline-secondary btn-sm">View</a>
+                            <a href="{{ url_for(edit, id=r.ID) }}" class="btn btn-outline-warning btn-sm">Edit</a>
+                            <a href="{{ url_for(delete, playlist_id=r['ID']) }}"
+                                class="btn btn-outline-danger btn-sm"
+                                onclick="return confirm('Are you sure you want to delete this playlist? This will remove all tracks from the playlist.')">
+                                Delete
+                            </a>
+                            <a href="{{ url_for('tracks.add_to_playlist', track_id=track_id, playlist_id=r['ID']) }}"
+                                class="btn btn-outline-success btn-sm">Add Song</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
