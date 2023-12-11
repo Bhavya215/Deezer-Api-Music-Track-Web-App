@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="container mt-3">
+        <h2 class="mb-4">{{ user.username.title() }}'s Playlists</h2>
+
+        <div class="row">
+            {% for playlist in playlists %}
+                <div class="col-md-3 mb-4">
+                    <div class="card" style="width: 250px; object-fit: cover;">
+                        <img src="{{ playlist.Picture }}" class="card-img-top" alt="{{ playlist.Name }}"
+                             style="height: 250px; width: 250px; ">
+                        <div class="card-body" align="center">
+                            <h5 class="card-title" align="center">{{ playlist.Name }}</h5>
+                            <a href="{{ url_for('tracks.view_playlist', id=playlist.ID) }}"
+                               class="btn btn-primary btn-sm">View Playlist</a>
+                            <a href="{{ url_for('tracks.admin_add_to_playlist', user_id = request.args.get('user_id') ,track_id=track_id, playlist_id=playlist.ID) }}"
+                                class="btn btn-outline-success btn-sm">Add Song</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

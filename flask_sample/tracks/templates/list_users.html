@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h2 class="mb-4">List of Users</h2>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr class="{{  'white-bg' if loop.cycle('grey-bg', 'white-bg') == 'white-bg' }}">
+                        <td>
+                            <a href="{{ url_for('tracks.view_user', user_id=user.id) }}">{{ user.username.title() }}</a>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <a href="{{ url_for('tracks.user_playlists', user_id=user.id) }}" class="btn btn-primary">View Playlists</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
